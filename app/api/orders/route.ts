@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY 
 
     if(!PAYSTACK_SECRET_KEY){
-        console.log('Paystack secret key not found')
+        //console.log('Paystack secret key not found')
       return NextResponse.json({ message: "unexpected error occurred" }, { status: 500 });
     }
     const verifyResponse = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {
@@ -41,7 +41,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Payment verification failed" }, { status: 400 });
     }
 
-    const { amount, currency, metadata } = paystackData.data
+    const { amount, currency } = paystackData.data
 
     if (amount / 100 !== price) {
       return NextResponse.json({ message: "Payment amount does not match" }, { status: 400 });
@@ -67,11 +67,11 @@ if( paystackData.data.status !== 'success'){
             status: 'pending', // Pending until admin manually updates it
         });
 
-        console.log('📦 New order created:', order);
+      //  console.log('📦 New order created:', order);
 
         return NextResponse.json({ message: "Order created successfully", order }, { status: 201 });
     } catch (error) {
-        console.error("Order creation error:", error);
+       // console.error("Order creation error:", error);
         return NextResponse.json({ message: "Error creating order" }, { status: 500 });
     }
 }
