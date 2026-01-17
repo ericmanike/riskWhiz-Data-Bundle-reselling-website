@@ -25,7 +25,7 @@ export default function Home() {
           RiskWhiz provides affordable data bundle delivery across Ghana.
         </p>
 
-        <div className="mb-6 p-4 bg-blue-100 text-blue-600 rounded-2xl">
+        <div className="mb-4 mt-4 p-4 bg-yellow-500 text-brown-900 rounded-2xl animate-bounce hover:animate-none">
           <Wifi size={40} />
         </div>
 
