@@ -64,6 +64,7 @@ export default function BuyContent() {
     useEffect(() => {
         if (selectedNetwork) {
             fetchBundles();
+            loadPaystackScript();
         }
     }, [selectedNetwork]);
 
@@ -90,7 +91,7 @@ export default function BuyContent() {
     const handlePurchase = async () => {
         setLoading(true);
         try {
-             loadPaystackScript();
+         
 
 
   const reference = Date.now().toString()
