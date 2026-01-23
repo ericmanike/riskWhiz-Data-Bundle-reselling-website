@@ -53,11 +53,11 @@ export default async function HistoryPage() {
                                 <div className="text-right">
                                     <p className="font-bold text-white">{formatCurrency(order.price)}</p>
                                     <div className="flex items-center justify-end gap-1 mt-1">
-                                        {order.status === 'completed' && <CheckCircle2 size={14} className="text-green-600" />}
+                                        {order.status === 'delivered' && <CheckCircle2 size={14} className="text-green-600" />}
                                         {order.status === 'failed' && <XCircle size={14} className="text-red-600" />}
                                         {order.status === 'pending' && <Clock size={14} className="text-orange-600" />}
                                         <span className={`text-xs capitalize
-                      ${order.status === 'completed' ? 'text-green-600' :
+                      ${order.status === 'delivered' ? 'text-green-600' :
                                                 order.status === 'failed' ? 'text-red-600' :
                                                     'text-orange-600'}`}>
                                             {order.status}

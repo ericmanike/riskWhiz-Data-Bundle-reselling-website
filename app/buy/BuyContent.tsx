@@ -127,7 +127,7 @@ export default function BuyContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
              network: selectedNetwork,
-                    bundleName: selectedBundle.name,
+                    bundleName: selectedBundle.name.slice(0,-2),
                     price: selectedBundle.price,
                     phoneNumber,
                     reference,

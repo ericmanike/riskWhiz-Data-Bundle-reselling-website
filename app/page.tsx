@@ -31,7 +31,7 @@ export default function Home() {
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           transition={{ duration: 0.6 }}    
-          className="mb-4 mt-4 p-4 bg-yellow-500 text-brown-900 rounded-2xl "
+          className="mb-4 mt-4 p-4 bg-blue-600 text-white rounded-2xl "
         >
           <Wifi size={40} />
         </motion.div>

@@ -9,16 +9,31 @@ import { redirect } from "next/navigation";
 import { formatCurrency } from "@/lib/utils";
 
 export default async function DashboardPage() {
+
+
+
+    
     const session = await getServerSession(authOptions);
+
 
     if (!session) {
         redirect("/auth/login");
+    }
+
+    const getStatus = async (transactionId: string) => {
+        const res = await fetch('api/getstatus?transactionId=' + transactionId);
+        const data = await res.json();
+        return (data.status).toString();
     }
 
     await dbConnect();
     const recentOrders = await Order.find({ user: session.user.id })
         .sort({ createdAt: -1 })
         .limit(3);
+
+
+
+        
 
     return (
         <div className="p-4 space-y-6 max-w-4xl mx-auto md:pt-28 pt-24 z-0">
@@ -117,14 +132,16 @@ export default async function DashboardPage() {
                                     <div className="text-right">
                                         <p className="font-semibold text-sm">{formatCurrency(order.price)}</p>
                                         <div className="flex items-center justify-end gap-1 mt-0.5">
-                                            {order.status === 'completed' && <CheckCircle2 size={12} className="text-green-500" />}
+                                            
+                                            {order.status === 'delivered' && <CheckCircle2 size={12} className="text-green-500" />}
                                             {order.status === 'failed' && <XCircle size={12} className="text-red-500" />}
                                             {order.status === 'pending' && <Clock size={12} className="text-orange-500" />}
                                             <span className={`text-[10px] uppercase font-bold
-                                                ${order.status === 'completed' ? 'text-green-600' :
+                                                ${order.status === 'delivered' ? 'text-green-600' :
                                                     order.status === 'failed' ? 'text-red-500' :
                                                         'text-orange-500'}`}>
-                                                {order.status === 'completed' ? 'Delivered' : order.status}
+                                              {order.status === 'delivered' ? 'Delivered' : order.status}
+                                            
                                             </span>
                                         </div>
                                     </div>

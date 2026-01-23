@@ -5,9 +5,20 @@ import dbConnect from "@/lib/mongoose";
 import Bundle from "@/models/Bundle";
 
 export async function GET() {
+
+
     try {
+
+        
+
+
+
         await dbConnect();
         const bundles = await Bundle.find({ isActive: true }).sort({ network: 1, price: 1 });
+      
+    
+
+
         return NextResponse.json(bundles);
     } catch (error) {
         return NextResponse.json({ message: "Error fetching bundles" }, { status: 500 });
