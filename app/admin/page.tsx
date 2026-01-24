@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Users, ShoppingBag, CreditCard, Plus, Trash2, Edit, Package, Search, ChevronRight, CheckCircle2, Shield, X } from "lucide-react";
+import { Users, ShoppingBag, CreditCard, Plus, Trash2, Edit, Package, Search, ChevronRight, CheckCircle2, Shield, X, XCircle, Clock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { formatCurrency } from "@/lib/utils";
 
@@ -194,31 +194,7 @@ export default function AdminDashboard() {
         setBundleForm({ network: 'MTN', name: '', price: '', isActive: true });
     };
 
-    const handleStatusChange = async (orderId: string, newStatus: string) => {
-        try {
-            // Optimistic update
-            const updatedOrders = orders.map(order =>
-                order._id === orderId ? { ...order, status: newStatus } : order
-            );
-            setOrders(updatedOrders);
 
-            const res = await fetch(`/api/admin/orders/${orderId}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: newStatus })
-            });
-
-            if (!res.ok) {
-                // Revert on failure
-                fetchData();
-                alert('Failed to update status');
-            }
-        } catch (error) {
-            console.error(error);
-            fetchData();
-            alert('Error updating status');
-        }
-    };
 
 
     if (loading && !stats.users) {
@@ -368,7 +344,7 @@ export default function AdminDashboard() {
 
 
 
-                                 <Card className="border-zinc-200 hover:border-green-400 transition-colors bg-white">
+                                <Card className="border-zinc-200 hover:border-green-400 transition-colors bg-white">
                                     <CardContent className="p-6">
                                         <div className="flex items-center justify-between mb-4">
                                             <div className="p-3 bg-green-100 text-green-600 rounded-xl">
@@ -381,11 +357,11 @@ export default function AdminDashboard() {
                                     </CardContent>
                                 </Card>
 
-                             
 
-                       
 
-                        
+
+
+
 
                                 <Card className="border-zinc-200 hover:border-green-400 transition-colors bg-white">
                                     <CardContent className="p-6">
@@ -399,7 +375,7 @@ export default function AdminDashboard() {
                                         <h3 className="text-3xl font-bold mt-1 text-zinc-900">{formatCurrency(stats.sales)}</h3>
                                     </CardContent>
                                 </Card>
-                                             <Card className="border-zinc-200 hover:border-purple-400 transition-colors bg-white">
+                                <Card className="border-zinc-200 hover:border-purple-400 transition-colors bg-white">
                                     <CardContent className="p-3">
                                         <div className="flex items-center justify-between mb-4">
                                             <div className="p-3 bg-purple-100 text-purple-600 rounded-xl">
@@ -414,7 +390,7 @@ export default function AdminDashboard() {
                                 </Card>
 
 
-                                      <Card className=" bg-black border-zinc-200 hover:border-blue-400 transition-colors bg-white">
+                                <Card className=" bg-black border-zinc-200 hover:border-blue-400 transition-colors bg-white">
                                     <CardContent className="p-3">
                                         <div className="flex items-center justify-between mb-4">
                                             <div className="p-3 bg-blue-100 text-blue-600 rounded-xl">
@@ -427,7 +403,7 @@ export default function AdminDashboard() {
                                     </CardContent>
                                 </Card>
 
-                 
+
                             </div>
                         </>
                     )}
@@ -479,27 +455,15 @@ export default function AdminDashboard() {
                                                 <td className="px-6 py-4 font-medium text-zinc-700">{formatCurrency(order.price)}</td>
                                                 <td className="px-6 py-4 text-zinc-500">{new Date(order.createdAt).toLocaleDateString()}</td>
                                                 <td className="px-6 py-4">
-                                                    {/* <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border
-                                                        ${order.status === 'completed' ? 'bg-green-100 text-green-700 border-green-200' : 
-                                                          order.status === 'failed' ? 'bg-red-100 text-red-700 border-red-200' : 
-                                                          'bg-orange-100 text-orange-700 border-orange-200'}`}>
+                                                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border
+                                                        ${order.status === 'completed' ? 'bg-green-100 text-green-700 border-green-200' :
+                                                            order.status === 'failed' ? 'bg-red-100 text-red-700 border-red-200' :
+                                                                'bg-orange-100 text-orange-700 border-orange-200'}`}>
                                                         {order.status === 'completed' && <CheckCircle2 size={12} />}
                                                         {order.status === 'failed' && <XCircle size={12} />}
                                                         {order.status === 'pending' && <Clock size={12} />}
                                                         <span className="capitalize">{order.status}</span>
-                                                    </span> */}
-                                                    <select
-                                                        value={order.status}
-                                                        onChange={(e) => handleStatusChange(order._id, e.target.value)}
-                                                        className={`text-xs font-medium px-2 py-1 rounded-full border outline-none cursor-pointer transition-all appearance-none
-                                                            ${order.status === 'completed' ? 'bg-green-50 text-green-700 border-green-200 focus:border-green-400' :
-                                                                order.status === 'failed' ? 'bg-red-50 text-red-700 border-red-200 focus:border-red-400' :
-                                                                    'bg-orange-50 text-orange-700 border-orange-200 focus:border-orange-400'}`}
-                                                    >
-                                                        <option value="pending">Pending</option>
-                                                        <option value="completed">Completed</option>
-                                                        <option value="failed">Failed</option>
-                                                    </select>
+                                                    </span>
                                                 </td>
                                                 <td className="px-6 py-4 text-right">
                                                     <button

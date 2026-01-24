@@ -1,8 +1,4 @@
 "use client";
-
-
-
-
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -89,11 +85,15 @@ export default function BuyContent() {
     };
 
     const handlePurchase = async () => {
-        setLoading(true);
+
+    if(phoneNumber.length   <10){
+        alert("Valid Phone number is required")
+        return
+    }
+
+ setLoading(true);
         try {
          
-
-
   const reference = Date.now().toString()
 
  const  paystackKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY
