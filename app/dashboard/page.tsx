@@ -139,7 +139,9 @@ export default async function DashboardPage() {
                                               {order.status === 'delivered' ? 'Delivered' : order.status}
                                             
                                             </span>
+                                    
                                         </div>
+                                        <span className="text-xs text-slate-950"> <strong>Order ID:</strong> {order.transaction_id}</span>
                                     </div>
                                 </div>
                             ))
