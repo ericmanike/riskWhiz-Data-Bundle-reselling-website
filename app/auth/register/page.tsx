@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { UserPlus, Loader2 } from "lucide-react";
+import { UserPlus, Loader2, Eye, EyeOff } from "lucide-react";
 
 export default function RegisterPage() {
     const router = useRouter();
@@ -14,6 +14,7 @@ export default function RegisterPage() {
         phone: "",
         password: "",
     });
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
@@ -48,7 +49,7 @@ export default function RegisterPage() {
     };
 
     return (
-        <div className="flex items-center justify-center h-screen overflow-y-auto  px-4">
+        <div className="flex items-center justify-center h-screen overflow-y-auto  px-4" >
             <Card className="w-full max-w-md ">
                 <CardHeader className="text-center">
                     <div className="mx-auto w-12 h-12 bg-white rounded-full flex items-center justify-center mb-4 text-blue-600">
@@ -105,15 +106,28 @@ export default function RegisterPage() {
 
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-slate-900">Password</label>
-                            <input
-                                name="password"
-                                type="password"
-                                required
-                                value={formData.password}
-                                onChange={handleChange}
-                                className="w-full px-4 py-2 text-black rounded-lg border border-slate-300 bg-white/10 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-white transition-all"
-                                placeholder="Create a password"
-                            />
+                            <div className="relative">
+                                <input
+                                    name="password"
+                                    type={showPassword ? "text" : "password"}
+                                    required
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-2 text-black rounded-lg border border-slate-300 bg-white/10 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-white transition-all pr-10"
+                                    placeholder="Create a password"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none"
+                                >
+                                    {showPassword ? (
+                                        <EyeOff className="h-5 w-5" />
+                                    ) : (
+                                        <Eye className="h-5 w-5" />
+                                    )}
+                                </button>
+                            </div>
                         </div>
 
                         <button
@@ -133,6 +147,6 @@ export default function RegisterPage() {
                     </p>
                 </CardContent>
             </Card>
-        </div>
+        </div >
     );
 }

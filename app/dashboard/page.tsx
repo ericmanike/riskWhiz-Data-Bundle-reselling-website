@@ -135,7 +135,7 @@ export default async function DashboardPage() {
                                             <span className={`text-[10px] uppercase font-bold
                                                 ${order.status === 'delivered' ? 'text-green-600' :
                                                     order.status === 'failed' ? 'text-red-500' :
-                                                        'text-orange-500'}`}>
+                                                        'text-orange-600'}`}>
                                               {order.status === 'delivered' ? 'Delivered' : order.status}
                                             
                                             </span>

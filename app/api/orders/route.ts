@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import dbConnect from "@/lib/mongoose";
 import Order from "@/models/Order";
+import { orderRateLimit } from "@/lib/ratelimit";
 
 
 export async function POST(req: Request) {
@@ -12,17 +13,30 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
+    const ip = session.user.id;
+    console.log(  'order rate limit identifier:', ip)
+    const { success } = await orderRateLimit.limit(ip);
+
+    if (!success) {
+      return NextResponse.json({ message: "Too many order attempts. Please try again later." }, { status: 429 });
+    }
+
     const { network, bundleName, price, phoneNumber, reference } = await req.json();
 
     console.log('Received data:', { network, bundleName, price, phoneNumber, reference });
 
-    if (!network || !bundleName || !price || !phoneNumber) {
+    if (!network || !bundleName || !price || !phoneNumber || !reference) {
       return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
     }
 
     await dbConnect();
 
-
+    // prevent replay attack
+    const existingOrder = await Order.findOne({ transaction_id: reference });
+    if (existingOrder) {
+      return NextResponse.json({ message: "Duplicate transaction reference" }, { status: 409 });
+    }     
+    
 
     const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY
     const DAKAZI_API_KEY = process.env.DAKAZI_API_KEY

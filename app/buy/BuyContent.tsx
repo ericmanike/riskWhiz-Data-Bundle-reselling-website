@@ -113,7 +113,7 @@ export default function BuyContent() {
         key: paystackKey!,
         email:session?.user?.email!,
         currency: 'GHS',
-        amount: parseFloat(selectedBundle.price.toString()) * 100, // Convert to kobo
+        amount: Math.round(Number(selectedBundle.price) * 100), // Convert to kobo
         
         ref: reference,
         onClose: () => {

@@ -13,11 +13,10 @@ export interface IOrder extends Document {
     createdAt: Date;
     updatedAt: Date;
 }
-
 const OrderSchema = new Schema<IOrder>(
     {
         user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-        transaction_id: { type: String, required: true },
+        transaction_id: { type: String, required: true, unique: true },
         bundleName: { type: String, required: true },
         network: { type: String, required: true },
         price: { type: Number, required: true },
