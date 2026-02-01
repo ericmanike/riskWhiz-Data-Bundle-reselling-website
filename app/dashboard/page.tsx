@@ -16,7 +16,7 @@ export default async function DashboardPage() {
 
     const session = await getServerSession(authOptions);
 
-  
+
 
     if (!session) {
         redirect("/auth/login");
@@ -29,7 +29,7 @@ export default async function DashboardPage() {
         .sort({ createdAt: -1 })
         .limit(3);
 
-    const balance = await User.findById(session.user.id ).select("walletBalance");
+    const balance = await User.findById(session.user.id).select("walletBalance");
 
     return (
         <div className="p-4 space-y-6 max-w-4xl mx-auto md:pt-28 pt-24 z-0">
@@ -39,11 +39,11 @@ export default async function DashboardPage() {
                     <p className="text-zinc-500">Welcome back</p>
                 </div>
                 {session?.user?.role !== 'admin' && (
-                   
-                   <div className=" flex items-center gap-5">
-                     <strong>Balance {formatCurrency(balance?.walletBalance || 0 )}</strong>
-                     <TopUpwallet />
-                  
+
+                    <div className=" flex items-center gap-5">
+                        <strong>Balance {formatCurrency(balance?.walletBalance || 0)}</strong>
+                        <TopUpwallet />
+
                     </div>
                 )}
             </div>
@@ -85,22 +85,26 @@ export default async function DashboardPage() {
                             </CardContent>
                         </Card>
                     </Link>
-                   
-                        <Card className="hover:border-zinc-400 hover:shadow-md cursor-pointer transition-all">
-                            <CardContent className="flex items-center gap-3 p-4">
-                               
 
-                                <div className="grid grid-cols-1  md:grid-cols-2 gap-2   taxt-[14px]">
-                                    <Link href="/agents"> <button className="bg-yellow-500 text-brown-500 px-4 py-2 rounded-lg"> 
-                                    AFA Registration</button></Link>
-                                        
-                                        <BecomeAgent />
+                    <Card className=" hover:shadow-md cursor-pointer transition-all">
+                        <CardContent className="flex  items-center gap-3 p-4">
 
-                                </div>
-                            </CardContent>
-                        </Card>
-                 
+
+                            <div className="grid grid-cols-1  gap-2 w-full">
+                                <Link href="/afa-registration" className="w-full">
+                                    <button className="w-full bg-yellow-500 hover:bg-yellow-600 text-brown-500 px-3 md:px-4 py-2 md:py-2.5 rounded-lg text-xs md:text-sm font-semibold transition-all">
+                                        AFA Registration
+                                    </button>
+                                </Link>
+
+
+                            </div>
+                        </CardContent>
+                    </Card>
+
                 </div>
+                <div className='mt-5'> <BecomeAgent /></div>
+
             </div>
 
             {/* Recent Orders */}
@@ -125,14 +129,19 @@ export default async function DashboardPage() {
                                 <div key={order._id.toString()} className="flex items-center justify-between p-4 bg-transparent border-b border-blue-500 last:border-0 hover:bg-white/5 transition-colors">
                                     <div className="flex items-center gap-4">
                                         <div className={`w-10 h-10 rounded-full flex items-center justify-center 
-                                            ${order.network === 'MTN' ? 'bg-yellow-400 text-yellow-900' :
+                                            ${order.network === 'MTN' ? 'bg-yellow-500 text-brown-500' :
                                                 order.network === 'Telecel' ? 'bg-red-500 text-white' :
-                                                    'bg-blue-800 text-white'}`}>
+                                                    'bg-blue-600 text-white'}`}>
                                             <Wifi size={18} />
                                         </div>
                                         <div>
                                             <p className="font-medium text-sm text-zinc-900">{order.network} {order.bundleName}</p>
-                                            <p className="text-xs text-slate-950">{new Date(order.createdAt).toLocaleDateString()}</p>
+                                            <div className="flex flex-col">
+                                                <span className="text-xs text-slate-900/60">{new Date(order.createdAt).toLocaleDateString()}</span>
+                                                <span className="text-[10px] text-slate-900/40 font-medium">
+                                                    {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                     <div className="text-right">

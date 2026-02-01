@@ -22,7 +22,7 @@ export default function BottomNav() {
     ];
 
     return (
-        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-blue-600 text-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] pb-safe pt-2 px-6">
+        <div className="md:hidden fixed bottom-0 left-0 right-0  bg-white text-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] pb-safe pt-2 px-6">
             <div className="flex justify-between items-end pb-3">
                 {navItems.map((item) => {
                     const isActive = pathname === item.href;
@@ -36,8 +36,8 @@ export default function BottomNav() {
                                 className={clsx(
                                     "p-2 rounded-xl transition-all duration-200",
                                     isActive
-                                        ? "bg-white text-blue-600 shadow-lg -translate-y-1.5"
-                                        : "text-blue-200 hover:text-white"
+                                        ? "bg-slate-600 text-white shadow-lg -translate-y-1.5"
+                                        : "text-slate-600 hover:text-white"
                                 )}
                             >
                                 <item.icon size={20} strokeWidth={isActive ? 2.5 : 2} />
@@ -45,7 +45,7 @@ export default function BottomNav() {
                             <span
                                 className={clsx(
                                     "text-[10px] font-medium transition-colors",
-                                    isActive ? "text-white" : "text-blue-200"
+                                    isActive ? "text-blue-600" : "text-slate-600"
                                 )}
                             >
                                 {item.label}

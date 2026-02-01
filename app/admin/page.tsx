@@ -1,7 +1,6 @@
 "use client";
-
 import { useState, useEffect } from "react";
-import { Users, ShoppingBag, CreditCard, Plus, Trash2, Edit, Package, Search, ChevronRight, CheckCircle2, Shield, X, XCircle, Clock } from "lucide-react";
+import { Users, ShoppingBag, CreditCard, Plus, Trash2, Edit, Package, Search, ChevronRight, CheckCircle2, Shield, X, XCircle, Clock, UserPlus, Wallet } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { formatCurrency } from "@/lib/utils";
 
@@ -38,6 +37,12 @@ export default function AdminDashboard() {
 
 
     const [submitting, setSubmitting] = useState(false);
+    const [bundleFilter, setBundleFilter] = useState<'all' | 'user' | 'agent'>('all');
+
+    // Top-up modal state
+    const [topUpModalOpen, setTopUpModalOpen] = useState(false);
+    const [selectedUser, setSelectedUser] = useState<any>(null);
+    const [topUpAmount, setTopUpAmount] = useState('');
 
     useEffect(() => {
         fetchData();
@@ -194,6 +199,80 @@ export default function AdminDashboard() {
         setIsBundleModalOpen(false);
         setEditingBundle(null);
         setBundleForm({ network: 'MTN', name: '', price: '', isActive: true, audience: 'user' });
+    };
+
+    const handleMakeAgent = async (userId: string, userName: string) => {
+        if (!confirm(`Are you sure you want to promote ${userName} to agent?`)) return;
+
+        try {
+            const res = await fetch('/api/makeAgent', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId })
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                // Update the user in the local state
+                setUsers(users.map(u =>
+                    u._id === userId ? { ...u, role: 'agent' } : u
+                ));
+                alert(`${userName} has been promoted to agent!`);
+            } else {
+                alert(data.message || 'Failed to promote user to agent');
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Error promoting user to agent');
+        }
+    };
+
+    const handleTopUpUser = async () => {
+        if (!selectedUser || !topUpAmount) {
+            alert('Please enter an amount');
+            return;
+        }
+
+        const amount = parseFloat(topUpAmount);
+        if (amount <= 0) {
+            alert('Amount must be greater than 0');
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/adminTopUp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: selectedUser._id,
+                    amount
+                })
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                // Update the user in the local state
+                setUsers(users.map(u =>
+                    u._id === selectedUser._id ? { ...u, walletBalance: data.user.walletBalance } : u
+                ));
+                alert(`Successfully added ${formatCurrency(amount)} to ${selectedUser.name}'s wallet!`);
+                setTopUpModalOpen(false);
+                setSelectedUser(null);
+                setTopUpAmount('');
+            } else {
+                alert(data.message || 'Failed to top up user balance');
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Error topping up user balance');
+        }
+    };
+
+    const openTopUpModal = (user: any) => {
+        setSelectedUser(user);
+        setTopUpModalOpen(true);
     };
 
 
@@ -437,18 +516,18 @@ export default function AdminDashboard() {
                             </div>
                             <div className="overflow-x-auto">
                                 <table className="w-full text-sm text-left">
-                                    <thead className="bg-zinc-50 text-zinc-500 font-medium">
+                                    <thead className="bg-zinc-50 text-zinc-500 font-medium whitespace-nowrap">
                                         <tr>
-                                            <th className="px-6 py-4">Order ID</th>
-                                            <th className="px-6 py-4">User</th>
-                                            <th className="px-6 py-4">Bundle</th>
-                                            <th className="px-6 py-4">Amount</th>
-                                            <th className="px-6 py-4">Date</th>
-                                            <th className="px-6 py-4">Status</th>
-                                            <th className="px-6 py-4 text-right">Actions</th>
+                                            <th className="px-6 py-4 border-b">Order ID</th>
+                                            <th className="px-6 py-4 border-b">User</th>
+                                            <th className="px-6 py-4 border-b">Bundle</th>
+                                            <th className="px-6 py-4 border-b">Amount</th>
+                                            <th className="px-6 py-4 border-b">Date</th>
+                                            <th className="px-6 py-4 border-b">Status</th>
+                                            <th className="px-6 py-4 border-b text-right">Actions</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-zinc-100">
+                                    <tbody className="divide-y divide-zinc-100 whitespace-nowrap">
                                         {orders.map((order) => (
                                             <tr key={order._id} className="hover:bg-zinc-50 transition-colors">
                                                 <td className="px-6 py-4 font-mono text-xs text-zinc-500">#{order.transaction_id}</td>
@@ -460,18 +539,27 @@ export default function AdminDashboard() {
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium 
-                                                        ${order.network === 'MTN' ? 'bg-yellow-100 text-yellow-800' :
-                                                            order.network === 'Telecel' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}`}>
+                                                        ${order.network === 'MTN' ? 'bg-yellow-500 text-brown-500' :
+                                                            order.network === 'Telecel' ? 'bg-red-500 text-white' : 'bg-blue-600 text-white'}`}>
                                                         {order.network} {order.bundleName}
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4 font-medium text-zinc-700">{formatCurrency(order.price)}</td>
-                                                <td className="px-6 py-4 text-zinc-500">{new Date(order.createdAt).toLocaleDateString()}</td>
+                                                <td className="px-6 py-4">
+                                                    <div className="flex flex-col">
+                                                        <span className="text-zinc-600">{new Date(order.createdAt).toLocaleDateString()}</span>
+                                                        <span className="text-[10px] text-zinc-400 font-medium">
+                                                            {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                        </span>
+                                                    </div>
+                                                </td>
                                                 <td className="px-6 py-4">
                                                     <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border
-                                                        ${order.status === 'completed' ? 'bg-green-100 text-green-700 border-green-200' :
-                                                            order.status === 'failed' ? 'bg-red-100 text-red-700 border-red-200' :
-                                                                'bg-orange-100 text-orange-700 border-orange-200'}`}>
+                                                        ${order.status === 'delivered' ? 'bg-green-600 text-white border-green-700' :
+                                                            order.status === 'completed' ? 'bg-green-100 text-green-700 border-green-200' :
+                                                                order.status === 'failed' ? 'bg-red-100 text-red-700 border-red-200' :
+                                                                    'bg-orange-100 text-orange-700 border-orange-200'}`}>
+                                                        {order.status === 'delivered' && <CheckCircle2 size={12} />}
                                                         {order.status === 'completed' && <CheckCircle2 size={12} />}
                                                         {order.status === 'failed' && <XCircle size={12} />}
                                                         {order.status === 'pending' && <Clock size={12} />}
@@ -517,13 +605,16 @@ export default function AdminDashboard() {
                                     />
                                 </div>
                             </div>
-                            <div className="overflow-x-auto">
+
+                            {/* Desktop Table View */}
+                            <div className="hidden md:block overflow-x-auto">
                                 <table className="w-full text-sm text-left">
                                     <thead className="bg-zinc-50 text-zinc-500 font-medium">
                                         <tr>
                                             <th className="px-6 py-4">Name</th>
                                             <th className="px-6 py-4">Email</th>
                                             <th className="px-6 py-4">Role</th>
+                                            <th className="px-6 py-4">Wallet Balance</th>
                                             <th className="px-6 py-4">Joined</th>
                                             <th className="px-6 py-4 text-right">Actions</th>
                                         </tr>
@@ -533,7 +624,7 @@ export default function AdminDashboard() {
                                             <tr key={user._id} className="hover:bg-zinc-50 transition-colors">
                                                 <td className="px-6 py-4 font-medium text-zinc-900">
                                                     <div className="flex items-center gap-3">
-                                                        <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold border border-blue-200">
+                                                        <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold shadow-sm">
                                                             {user.name.charAt(0)}
                                                         </div>
                                                         {user.name}
@@ -542,20 +633,42 @@ export default function AdminDashboard() {
                                                 <td className="px-6 py-4 text-zinc-500">{user.email}</td>
                                                 <td className="px-6 py-4">
                                                     <span className={`px-2 py-1 rounded text-xs font-medium uppercase
-                                                        ${user.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-zinc-100 text-zinc-600'}
+                                                        ${user.role === 'admin' ? 'bg-purple-100 text-purple-700' :
+                                                            user.role === 'agent' ? 'bg-green-100 text-green-700' :
+                                                                'bg-zinc-100 text-zinc-600'}
                                                     `}>{user.role}</span>
+                                                </td>
+                                                <td className="px-6 py-4 font-semibold text-zinc-900">
+                                                    {formatCurrency(user.walletBalance || 0)}
                                                 </td>
                                                 <td className="px-6 py-4 text-zinc-500">{new Date(user.createdAt).toLocaleDateString()}</td>
                                                 <td className="px-6 py-4 text-right">
-                                                    <button className="text-zinc-400 hover:text-zinc-600 transition-colors">
-                                                        <Edit size={16} />
-                                                    </button>
+                                                    <div className="flex gap-2 justify-end flex-wrap">
+                                                        {user.role === 'user' && (
+                                                            <button
+                                                                onClick={() => handleMakeAgent(user._id, user.name)}
+                                                                className="inline-flex items-center gap-2 px-3 py-1.5 text-green-600 hover:text-white hover:bg-green-600 border border-green-600 rounded-lg transition-all text-sm font-medium"
+                                                                title="Promote to agent"
+                                                            >
+                                                                <UserPlus size={16} />
+                                                                Promote to Agent
+                                                            </button>
+                                                        )}
+                                                        <button
+                                                            onClick={() => openTopUpModal(user)}
+                                                            className="inline-flex items-center gap-2 px-3 py-1.5 text-blue-600 hover:text-white hover:bg-blue-600 border border-blue-600 rounded-lg transition-all text-sm font-medium"
+                                                            title="Top up balance"
+                                                        >
+                                                            <Wallet size={16} />
+                                                            Top Up Balance
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))}
                                         {users.length === 0 && (
                                             <tr>
-                                                <td colSpan={5} className="px-6 py-12 text-center text-zinc-500">
+                                                <td colSpan={6} className="px-6 py-12 text-center text-zinc-500">
                                                     <Users size={32} className="mx-auto mb-2 opacity-30 text-zinc-400" />
                                                     <p>No users found</p>
                                                 </td>
@@ -563,6 +676,66 @@ export default function AdminDashboard() {
                                         )}
                                     </tbody>
                                 </table>
+                            </div>
+
+                            {/* Mobile Card View */}
+                            <div className="md:hidden space-y-4 p-4">
+                                {users.map((user) => (
+                                    <div key={user._id} className="bg-white border border-zinc-200 rounded-lg p-4 shadow-sm">
+                                        <div className="flex items-start justify-between mb-3">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold shadow-sm">
+                                                    {user.name.charAt(0)}
+                                                </div>
+                                                <div>
+                                                    <p className="font-semibold text-zinc-900">{user.name}</p>
+                                                    <p className="text-xs text-zinc-500">{user.email}</p>
+                                                </div>
+                                            </div>
+                                            <span className={`px-2 py-1 rounded text-xs font-medium uppercase
+                                                ${user.role === 'admin' ? 'bg-purple-100 text-purple-700' :
+                                                    user.role === 'agent' ? 'bg-green-100 text-green-700' :
+                                                        'bg-zinc-100 text-zinc-600'}
+                                            `}>{user.role}</span>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-2 mb-3 text-sm">
+                                            <div>
+                                                <p className="text-zinc-500 text-xs">Wallet Balance</p>
+                                                <p className="font-semibold text-zinc-900">{formatCurrency(user.walletBalance || 0)}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-zinc-500 text-xs">Joined</p>
+                                                <p className="text-zinc-700">{new Date(user.createdAt).toLocaleDateString()}</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex flex-col gap-2 pt-3 border-t border-zinc-100">
+                                            {user.role === 'user' && (
+                                                <button
+                                                    onClick={() => handleMakeAgent(user._id, user.name)}
+                                                    className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 text-green-600 hover:text-white hover:bg-green-600 border border-green-600 rounded-lg transition-all text-sm font-medium"
+                                                >
+                                                    <UserPlus size={16} />
+                                                    Promote to Agent
+                                                </button>
+                                            )}
+                                            <button
+                                                onClick={() => openTopUpModal(user)}
+                                                className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 text-blue-600 hover:text-white hover:bg-blue-600 border border-blue-600 rounded-lg transition-all text-sm font-medium"
+                                            >
+                                                <Wallet size={16} />
+                                                Top Up Balance
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                                {users.length === 0 && (
+                                    <div className="py-12 text-center text-zinc-500">
+                                        <Users size={32} className="mx-auto mb-2 opacity-30 text-zinc-400" />
+                                        <p>No users found</p>
+                                    </div>
+                                )}
                             </div>
                         </Card>
                     )}
@@ -580,71 +753,110 @@ export default function AdminDashboard() {
                                 </button>
                             </div>
 
+                            {/* Filter Buttons */}
+                            <div className="flex gap-2 flex-wrap">
+                                <button
+                                    onClick={() => setBundleFilter('all')}
+                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${bundleFilter === 'all'
+                                        ? 'bg-blue-600 text-white shadow-md'
+                                        : 'bg-white text-zinc-600 border border-zinc-200 hover:border-blue-300'
+                                        }`}
+                                >
+                                    All Bundles
+                                </button>
+                                <button
+                                    onClick={() => setBundleFilter('user')}
+                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${bundleFilter === 'user'
+                                        ? 'bg-gray-600 text-white shadow-md'
+                                        : 'bg-white text-zinc-600 border border-zinc-200 hover:border-gray-300'
+                                        }`}
+                                >
+                                    User Bundles
+                                </button>
+                                <button
+                                    onClick={() => setBundleFilter('agent')}
+                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${bundleFilter === 'agent'
+                                        ? 'bg-green-600 text-white shadow-md'
+                                        : 'bg-white text-zinc-600 border border-zinc-200 hover:border-green-300'
+                                        }`}
+                                >
+                                    Agent Bundles
+                                </button>
+                            </div>
+
                             <Card className="border-zinc-200 bg-white overflow-hidden">
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-sm text-left">
-                                        <thead className="bg-blue-50 text-blue-800">
+                                        <thead className="bg-blue-50 text-blue-800 whitespace-nowrap">
                                             <tr>
-                                                <th className="px-6 py-4 font-medium">Network</th>
-                                                <th className="px-6 py-4 font-medium">Bundle Name</th>
-                                                <th className="px-6 py-4 font-medium">Price (GHS)</th>
-                                                <th className="px-6 py-4 font-medium">Status</th>
-                                                <th className="px-6 py-4 font-medium">Audience</th>
-                                                <th className="px-6 py-4 font-medium text-right">Actions</th>
+                                                <th className="px-6 py-4 font-medium border-b">Network</th>
+                                                <th className="px-6 py-4 font-medium border-b">Bundle Name</th>
+                                                <th className="px-6 py-4 font-medium border-b">Price (GHS)</th>
+                                                <th className="px-6 py-4 font-medium border-b">Status</th>
+                                                <th className="px-6 py-4 font-medium border-b">Audience</th>
+                                                <th className="px-6 py-4 font-medium border-b text-right">Actions</th>
                                             </tr>
                                         </thead>
-                                        <tbody className="divide-y divide-zinc-100">
-                                            {bundles.map((bundle) => (
-                                                <tr key={bundle._id} className="hover:bg-zinc-50 transition-colors">
-                                                    <td className="px-6 py-4 font-medium">
-                                                        <span className={`inline-block px-2 py-0.5 rounded text-xs font-bold uppercase w-16 text-center
-                                                            ${bundle.network === 'MTN' ? 'bg-yellow-100 text-yellow-800' :
-                                                                bundle.network === 'Telecel' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}`}>
-                                                            {bundle.network}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-6 py-4 text-zinc-900 font-medium">{bundle.name}</td>
-                                                    <td className="px-6 py-4 text-zinc-600">{formatCurrency(bundle.price)}</td>
-                                                    <td className="px-6 py-4">
-                                                        <span className={`px-2 py-1 rounded-full text-xs font-medium 
+                                        <tbody className="divide-y divide-zinc-100 whitespace-nowrap">
+                                            {bundles
+                                                .filter(bundle => {
+                                                    if (bundleFilter === 'all') return true;
+                                                    return bundle.audience === bundleFilter;
+                                                })
+                                                .map((bundle) => (
+                                                    <tr key={bundle._id} className="hover:bg-zinc-50 transition-colors">
+                                                        <td className="px-6 py-4 font-medium">
+                                                            <span className={`inline-flex items-center justify-center px-2 py-0.5 rounded text-xs font-bold uppercase min-w-[70px] text-center
+                                                            ${bundle.network === 'MTN' ? 'bg-yellow-500 text-brown-500' :
+                                                                    bundle.network === 'Telecel' ? 'bg-red-500 text-white' : 'bg-blue-600 text-white'}`}>
+                                                                {bundle.network}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-6 py-4 text-zinc-900 font-medium">{bundle.name}</td>
+                                                        <td className="px-6 py-4 text-zinc-600">{formatCurrency(bundle.price)}</td>
+                                                        <td className="px-6 py-4">
+                                                            <span className={`px-2 py-1 rounded-full text-xs font-medium 
                                                             ${bundle.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                                            {bundle.isActive ? 'Active' : 'Inactive'}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-6 py-4">
-                                                        <span className={`px-2 py-1 rounded-md text-xs font-medium border
+                                                                {bundle.isActive ? 'Active' : 'Inactive'}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-6 py-4">
+                                                            <span className={`px-2 py-1 rounded-md text-xs font-medium border
                                                             ${bundle.audience === 'agent' ? 'bg-purple-100 text-purple-700 border-purple-200' : 'bg-gray-100 text-gray-700 border-gray-200'}`}>
-                                                            {bundle.audience === 'agent' ? 'Agent' : 'User'}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-6 py-4">
-                                                        <div className="flex gap-2 justify-end">
-                                                            <button
-                                                                onClick={() => openEditModal(bundle)}
-                                                                className="p-2 text-zinc-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-                                                                title="Edit bundle"
-                                                            >
-                                                                <Edit size={16} />
-                                                            </button>
-                                                            <button
-                                                                onClick={() => handleDeleteBundle(bundle._id)}
-                                                                className="p-2 text-zinc-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                                                                title="Delete bundle"
-                                                            >
-                                                                <Trash2 size={16} />
-                                                            </button>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                            {bundles.length === 0 && (
-                                                <tr>
-                                                    <td colSpan={5} className="px-6 py-12 text-center text-zinc-500">
-                                                        <Package size={32} className="mx-auto mb-2 opacity-30 text-zinc-400" />
-                                                        <p>No bundles found</p>
-                                                    </td>
-                                                </tr>
-                                            )}
+                                                                {bundle.audience === 'agent' ? 'Agent' : 'User'}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-6 py-4">
+                                                            <div className="flex gap-2 justify-end">
+                                                                <button
+                                                                    onClick={() => openEditModal(bundle)}
+                                                                    className="p-2 text-zinc-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                                                                    title="Edit bundle"
+                                                                >
+                                                                    <Edit size={16} />
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleDeleteBundle(bundle._id)}
+                                                                    className="p-2 text-zinc-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                                                    title="Delete bundle"
+                                                                >
+                                                                    <Trash2 size={16} />
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            {bundles.filter(bundle => {
+                                                if (bundleFilter === 'all') return true;
+                                                return bundle.audience === bundleFilter;
+                                            }).length === 0 && (
+                                                    <tr>
+                                                        <td colSpan={6} className="px-6 py-12 text-center text-zinc-500">
+                                                            <Package size={32} className="mx-auto mb-2 opacity-30 text-zinc-400" />
+                                                            <p>No {bundleFilter !== 'all' ? bundleFilter : ''} bundles found</p>
+                                                        </td>
+                                                    </tr>
+                                                )}
                                         </tbody>
                                     </table>
                                 </div>
@@ -652,7 +864,85 @@ export default function AdminDashboard() {
                         </div>
                     )}
                 </div>
-            </div>
-        </div>
+            </div >
+
+            {/* Top Up Modal */}
+            {
+                topUpModalOpen && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                        <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+                            <div className="flex justify-between items-center mb-6">
+                                <h3 className="text-xl font-bold text-zinc-900">Top Up User Balance</h3>
+                                <button
+                                    onClick={() => {
+                                        setTopUpModalOpen(false);
+                                        setSelectedUser(null);
+                                        setTopUpAmount('');
+                                    }}
+                                    className="text-zinc-400 hover:text-zinc-600 transition-colors"
+                                >
+                                    <X size={24} />
+                                </button>
+                            </div>
+
+                            {selectedUser && (
+                                <div className="space-y-4">
+                                    <div className="bg-zinc-50 p-4 rounded-lg">
+                                        <p className="text-sm text-zinc-500 mb-1">User</p>
+                                        <p className="font-semibold text-zinc-900">{selectedUser.name}</p>
+                                        <p className="text-sm text-zinc-500">{selectedUser.email}</p>
+                                        <p className="text-sm text-zinc-600 mt-2">
+                                            Current Balance: <span className="font-bold text-blue-600">{formatCurrency(selectedUser.walletBalance || 0)}</span>
+                                        </p>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-zinc-700 mb-2">
+                                            Amount to Add (GHS)
+                                        </label>
+                                        <input
+                                            type="number"
+                                            step="0.01"
+                                            min="0"
+                                            value={topUpAmount}
+                                            onChange={(e) => setTopUpAmount(e.target.value)}
+                                            placeholder="Enter amount"
+                                            className="w-full px-4 py-3 border border-zinc-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                                        />
+                                    </div>
+
+                                    {topUpAmount && parseFloat(topUpAmount) > 0 && (
+                                        <div className="bg-blue-50 p-4 rounded-lg">
+                                            <p className="text-sm text-blue-600">
+                                                New Balance: <span className="font-bold">{formatCurrency((selectedUser.walletBalance || 0) + parseFloat(topUpAmount))}</span>
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    <div className="flex gap-3 pt-2">
+                                        <button
+                                            onClick={() => {
+                                                setTopUpModalOpen(false);
+                                                setSelectedUser(null);
+                                                setTopUpAmount('');
+                                            }}
+                                            className="flex-1 px-4 py-3 border border-zinc-300 text-zinc-700 rounded-lg hover:bg-zinc-50 transition-colors font-medium"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            onClick={handleTopUpUser}
+                                            className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                                        >
+                                            Confirm Top Up
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )
+            }
+        </div >
     );
 }

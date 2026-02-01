@@ -40,12 +40,17 @@ export default async function HistoryPage() {
                                     <div className={`w-10 h-10 rounded-full flex items-center justify-center 
                     ${order.network === 'MTN' ? 'bg-yellow-500 text-brown-500' :
                                             order.network === 'Telecel' ? 'bg-red-500 text-white' :
-                                                'bg-blue-500 text-white'}`}>
+                                                'bg-blue-600 text-white'}`}>
                                         <Wifi size={20} />
                                     </div>
                                     <div>
                                         <h3 className="font-semibold text-zinc-900">{order.network} {order.bundleName}</h3>
-                                        <p className="text-sm text-slate-950">{new Date(order.createdAt).toLocaleString()}</p>
+                                        <div className="flex flex-col">
+                                            <span className="text-sm text-slate-950/70">{new Date(order.createdAt).toLocaleDateString()}</span>
+                                            <span className="text-xs text-slate-950/50">
+                                                {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            </span>
+                                        </div>
                                         <p className="text-xs text-slate-950">{order.phoneNumber}</p>
                                     </div>
                                 </div>

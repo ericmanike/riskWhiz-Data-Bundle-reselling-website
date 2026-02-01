@@ -20,11 +20,11 @@ export async function GET() {
         const userCount = await User.countDocuments();
         const orderCount = await Order.countDocuments();
         const salesResult = await Order.aggregate([
-            { $match: { status: 'completed' } },
+            { $match: { status: 'delivered' } },
             { $group: { _id: null, total: { $sum: "$price" } } }
         ]);
         const totalSales = salesResult.length > 0 ? salesResult[0].total : 0;
-        
+
         return NextResponse.json({
             users: userCount,
             orders: orderCount,

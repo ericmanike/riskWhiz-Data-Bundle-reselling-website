@@ -88,7 +88,7 @@ export default function BuyContent() {
 
                     // If bundle is for users (default), everyone can see it
                     // Optional: You could hide user bundles from agents if you wanted strict separation
-                    return b.audience === 'user' || b.audience === 'admin';
+                    return  userRole === 'user' || userRole === 'admin';
                 });
 
                 setBundles(filtered);

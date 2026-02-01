@@ -3,6 +3,9 @@ import { useRouter } from "next/navigation"
 import {useState} from 'react'
 import {formatCurrency} from '@/lib/utils'
 import { X } from 'lucide-react'
+import { useSession } from "next-auth/react"
+
+
 type Props = {
   isOpen: boolean
   amount: number | null
@@ -15,6 +18,8 @@ export default function RechargeModal({ isOpen, setAmount ,amount, setIsOpen, ha
 
 const router = useRouter()
 
+const { data: session } = useSession()
+  const user = session?.user
 
   if (!isOpen) return null
 
@@ -29,7 +34,33 @@ const router = useRouter()
             <X size={20} />
           </button>
         </div>
-      
+        <div>
+          You can top up your wallet using the following methods:
+          <ol style={{ listStyleType: 'decimal' }} className=" bg-gray-100 p-4 rounded-md pl-10">
+
+            <li><p className="font-semibold">Pay with Mobile Money - Manual
+                <br/>
+                Send the money to: <strong>0545463582</strong>
+                <br/>
+                Name: <strong>EUGINE SOGTI-NYE</strong>
+                <br/>
+                Reference: <strong>{user?.email}</strong> 
+              
+              
+               </p></li>
+            <li><p className="font-semibold">Pay with Paystack- Enter amount and click on confirm top up</p></li>
+    
+          </ol>
+
+
+        </div>
+
+
+
+
+
+
+
         <div className="py-5 space-y-4 text-sm">
         
              

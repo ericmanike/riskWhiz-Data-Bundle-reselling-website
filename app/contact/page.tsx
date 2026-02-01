@@ -1,136 +1,124 @@
 'use client';
-import React, { useState } from 'react';
+import React from 'react';
+import { useEffect } from 'react';
 import { useInView } from 'react-intersection-observer';
-
-
+import { useForm, ValidationError } from '@formspree/react';
 
 function ContactPage() {
+  const [state, handleSubmit] = useForm("xykpwyje"); // Replace with your Formspree ID: mjvdykoy
 
-  const {ref, inView} = useInView({
-threshold:0.2,
-triggerOnce:true
-  })
-
-  const {ref:Submit, inView:sinView} =useInView({
-threshold:0.2,
-triggerOnce:true
-
-  })
-  const [formData, setFormData] = useState<{ name: string; email: string; message: string }>({
-    name: '',
-    email: '',
-    message: '',
+  const { ref, inView } = useInView({
+    threshold: 0.2,
+    triggerOnce: true
   });
 
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const { ref: Submit, inView: sinView } = useInView({
+    threshold: 0.2,
+    triggerOnce: true
+  });
+
+
+  useEffect(() => {
+   
+    console.log(state);
+  }, [state]);
 
 
 
-
-
-
-
-
-  const validate = () => {
-    let tempErrors: { [key: string]: string } = {};
-    if (!formData.name) tempErrors.name = 'Name is required';
-    if (!formData.email) {
-      tempErrors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      tempErrors.email = 'Invalid email format';
-    }
-    if (!formData.message) tempErrors.message = 'Message is required';
-
-    setErrors(tempErrors);
-    return Object.keys(tempErrors).length === 0;
-  };
-
-  const handleChange = (e:any) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit =  async (e:any) => {
-    e.preventDefault();
-    if (validate()) {
-
-      try{ 
-
-        const res = fetch('/api/contact', {
-          method: 'POST',
-          headers: {
-          'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formData),
-
-        })
-
-        console.log('Form submitted successfully:', res);
-        alert('Form submitted successfully!');
-      }catch(err){
-        alert('Error submitting form.try again later.');
-        console.log('Form submission error:', err);
-      }finally{
-            setFormData({ name: '', email: '', message: '' });
-      }
-
-    
-    }
-  };
+  if (state.succeeded) {
+    return (
+      <div className="bg-inherit min-h-screen flex items-center justify-center p-5">
+        <div className="shadow-lg rounded-xl p-8 w-full max-w-lg text-center bg-white border border-blue-100">
+          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold text-slate-900 mb-2">Message Sent!</h2>
+          <p className="text-slate-600 mb-6">Thank you for reaching out. We'll get back to you as soon as possible.</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="w-full bg-[#191097] text-white font-semibold py-2 rounded-lg hover:bg-[#0b3eb4] transition-all"
+          >
+            Send Another Message
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className=" bg-inherit   min-h-screen flex items-center justify-center   p-5">
-  
-      <div className={` shadow-lg   rounded-xl p-8 w-full max-w-lg`} ref={ref}>
-        <h2 className={`text-2xl font-bold text-blue-600 mb-5 text-center  transition-all duration-1000  relative after:absolute after:bottom-0 after:content-[''] after:bg-amber-950 
-           
-          ${inView ? 'opacity-100 translate-x-0  ':'translate-x-50 opacity-0'} `}>
-          Contact SecureFund
+    <div className="bg-inherit min-h-screen flex items-center justify-center p-5">
+      <div className={`shadow-lg rounded-xl p-8 w-full max-w-lg bg-white border border-slate-100 transition-all duration-700 ${inView ? 'opacity-100' : 'opacity-0'}`} ref={ref}>
+        <h2 className={`text-2xl font-bold text-blue-600 mb-6 text-center transition-all duration-1000 
+          ${inView ? 'opacity-100 translate-y-0' : 'translate-y-4 opacity-0'}`}>
+          Contact RiskWhiz
         </h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
+
+        {state.errors && (
+
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm font-medium text-center">
+            Submission failed. Please check your Formspree ID or internet connection.
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-gray-700">Name</label>
+            <label htmlFor="name" className="block text-sm font-medium text-slate-700 mb-1">Name</label>
             <input
+              id="name"
               type="text"
               name="name"
-              value={formData.name}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+              required
+              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all"
+              placeholder="Your Name"
             />
-            {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
           </div>
 
           <div>
-            <label className="block text-gray-700">Email</label>
+            <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1">Email Address</label>
             <input
+              id="email"
               type="email"
               name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+              required
+              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all"
+              placeholder="your@email.com"
             />
-            {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
+            <ValidationError
+              prefix="Email"
+              field="email"
+              errors={state.errors}
+              className="mt-1 text-sm text-red-500"
+            />
           </div>
 
           <div>
-            <label className="block text-gray-700">Message</label>
+            <label htmlFor="message" className="block text-sm font-medium text-slate-700 mb-1">Message</label>
             <textarea
+              id="message"
               name="message"
-              value={formData.message}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+              required
               rows={4}
+              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all"
+              placeholder="How can we help you?"
             />
-            {errors.message && <p className="text-red-500 text-sm">{errors.message}</p>}
+            <ValidationError
+              prefix="Message"
+              field="message"
+              errors={state.errors}
+              className="mt-1 text-sm text-red-500"
+            />
           </div>
 
-          <button 
-          ref={Submit}
+          <button
+            ref={Submit}
             type="submit"
-            className={`w-full bg-[#191097] text-white font-semibold py-2 rounded-lg hover:bg-[#0b3eb4] transition-all duration-1000
-               ${sinView ?'translate-y-0 opacity-100':'translate-y-[1npm r0px] opacity-0 '}`}
-          onClick={ (e) => handleSubmit(e)}
+            disabled={state.submitting}
+            className={`w-full bg-[#191097] text-white font-semibold py-3 rounded-lg hover:bg-[#0b3eb4] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-500
+               ${sinView ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}
           >
-            Send Message
+            {state.submitting ? 'Sending...' : 'Send Message'}
           </button>
         </form>
       </div>
@@ -139,3 +127,4 @@ triggerOnce:true
 }
 
 export default ContactPage;
+
