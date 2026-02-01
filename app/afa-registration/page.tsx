@@ -223,7 +223,7 @@ export default function AgentsPage() {
             className="text-blue-600 font-bold hover:underline"
             href="mailto:support@riskwhiz.com"
           >
-            support@riskwhiz.com
+            euginesogtinye@gmail.com
           </a>
         </div>
       </section>
