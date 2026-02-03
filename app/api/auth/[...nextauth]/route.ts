@@ -33,6 +33,7 @@ async function POST(req: Request, ctx: any) {
     // }
 
     // Pass a new NextRequest with the read body to NextAuth
+    
     const newReq = new NextRequest(req.url, {
         method: req.method,
         headers: req.headers,
