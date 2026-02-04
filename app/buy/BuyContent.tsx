@@ -30,9 +30,9 @@ declare global {
     }
 }
 const NETWORKS = [
-    { id: "MTN", name: "MTN", color: "bg-yellow-400", textColor: "text-yellow-900" },
-    { id: "Telecel", name: "Telecel", color: "bg-red-500", textColor: "text-white" },
-    { id: "AirtelTigo", name: "AirtelTigo", color: "bg-blue-600", textColor: "text-white" },
+    { id: "MTN", name: "MTN", color: "bg-[#FFCC00]", textColor: "text-[#51291e]" },
+    { id: "Telecel", name: "Telecel", color: "bg-[#E60000]", textColor: "text-white" },
+    { id: "AirtelTigo", name: "AirtelTigo", color: "bg-[#003399]", textColor: "text-white" },
 ];
 
 export default function BuyContent() {
@@ -51,6 +51,8 @@ export default function BuyContent() {
 
     const [buyModalOpen, setBuyModalOpen] = useState(true);
     const [message, setMessage] = useState("")
+    const networkConfig = NETWORKS.find(n => n.id === selectedNetwork);
+
 
     const loadPaystackScript = () => {
         const script = document.createElement('script')
@@ -88,7 +90,7 @@ export default function BuyContent() {
 
                     // If bundle is for users (default), everyone can see it
                     // Optional: You could hide user bundles from agents if you wanted strict separation
-                    return  userRole === 'user' || userRole === 'admin';
+                    return userRole === 'user' || userRole === 'admin';
                 });
 
                 setBundles(filtered);
@@ -302,12 +304,12 @@ export default function BuyContent() {
                                     }}
                                     className={clsx(
                                         "p-4 rounded-xl border transition-all text-left",
-                                        "hover:shadow-lg",
-                                        "bg-white border-zinc-300 "
+                                        "hover:shadow-lg shadow-sm font-semibold",
+                                        networkConfig ? `${networkConfig.color} ${networkConfig.textColor} border-transparent` : "bg-white border-zinc-300 text-zinc-900"
                                     )}
                                 >
-                                    <h3 className="text-lg font-bold mb-1 text-zinc-900">{bundle.name}</h3>
-                                    <p className="text-blue-600 font-medium">{formatCurrency(bundle.price)}</p>
+                                    <h3 className="text-lg font-bold mb-1">{bundle.name}</h3>
+                                    <p className="font-medium opacity-90">{formatCurrency(bundle.price)}</p>
                                 </button>
                             ))}
                         </div>
@@ -343,25 +345,28 @@ export default function BuyContent() {
                                 />
                             </div>
 
-                            <div className="bg-blue-700 p-4 rounded-xl space-y-2 mb-6 border border-blue-500">
+                            <div className={clsx(
+                                "p-4 rounded-xl space-y-2 mb-6 border",
+                                networkConfig ? `${networkConfig.color} ${networkConfig.textColor} border-transparent` : "bg-blue-700 text-white border-blue-500"
+                            )}>
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-white">Network</span>
-                                    <span className="font-semibold text-white">{selectedNetwork}</span>
+                                    <span className="opacity-80">Network</span>
+                                    <span className="font-bold">{selectedNetwork}</span>
                                 </div>
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-white">Package</span>
-                                    <span className="font-semibold text-white">{selectedBundle.name}</span>
+                                    <span className="opacity-80">Package</span>
+                                    <span className="font-bold">{selectedBundle.name}</span>
                                 </div>
 
 
-                                <div className="border-t border-blue-500 my-2 pt-2 flex justify-between items-center">
-                                    <span className="text-white">Transaction Fee</span>
-                                    <span className="text-xl font-bold text-white">{formatCurrency(0.02 * selectedBundle.price)}</span>
+                                <div className="border-t border-black/10 my-2 pt-2 flex justify-between items-center">
+                                    <span className="opacity-80">Transaction Fee</span>
+                                    <span className="text-xl font-black">{formatCurrency(0.02 * selectedBundle.price)}</span>
                                 </div>
 
-                                <div className="border-t border-blue-500 my-2 pt-2 flex justify-between items-center">
-                                    <span className="text-white">   Total Price</span>
-                                    <span className="text-xl font-bold text-white">{formatCurrency(selectedBundle.price + 0.02 * selectedBundle.price)}</span>
+                                <div className="border-t border-black/10 my-2 pt-2 flex justify-between items-center">
+                                    <span className="opacity-80">Total Price</span>
+                                    <span className="text-xl font-black">{formatCurrency(selectedBundle.price + 0.02 * selectedBundle.price)}</span>
                                 </div>
 
                             </div>

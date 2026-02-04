@@ -79,7 +79,8 @@ console.log(pendingOrders);
   }
 
   return Response.json({ success: true });
-} catch (error) {
+} catch (error: any) {
+  console.log("Error updating order statuses: ", error);
   return Response.json({ success: false, error: error });
 }
 

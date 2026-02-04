@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import dbConnect from "@/lib/mongoose";
 import Order from "@/models/Order";
-import { orderRateLimit } from "@/lib/ratelimit";
+
 
 
 export async function POST(req: Request) {
@@ -134,13 +134,6 @@ export async function POST(req: Request) {
 
 
     console.log(' purchase order response:', Orderres)
-
-
-
-
-
-   
-
 
 
    
