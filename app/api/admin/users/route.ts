@@ -12,7 +12,7 @@ export async function GET() {
         }
 
         await dbConnect();
-        const users = await User.find().select('-password').sort({ createdAt: -1 }).limit(50); // Limit for performance
+        const users = await User.find().select('-password').sort({ createdAt: -1 }); // Limit for performance
 
         return NextResponse.json(users);
     } catch (error) {
