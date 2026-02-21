@@ -5,7 +5,7 @@ import dbConnect from "@/lib/mongoose";
 import Order from "@/models/Order";
 import { NextRequest,NextResponse } from "next/server";
 
-export async function POST() {
+export async function GET(req: NextRequest) {
 
   try {
     
