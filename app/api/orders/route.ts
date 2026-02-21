@@ -88,7 +88,7 @@ export async function POST(req: Request) {
             console.log('Total after rounding:', total)
  
          
-       console.log('Expected price:')
+  
        console.log('Payment amount:', amount / 100)
 
     if (amount / 100 !== Number(total)) {
@@ -107,7 +107,6 @@ export async function POST(req: Request) {
       {
         method: "POST",
         headers: {
-
           "Content-Type": "application/json",
           "x-api-key": `${DAKAZI_API_KEY}`,
         },
@@ -127,17 +126,14 @@ export async function POST(req: Request) {
 
     if (!placeOrder.ok) {
 
-      NextResponse.json({ error: ' could not place an order' })
+      return NextResponse.json({ error: ' could not place an order' }, { status: 500 });
+
 
     }
 
 
 
     console.log(' purchase order response:', Orderres)
-
-
-   
-
 
     const order = await Order.create({
       user: session.user.id,

@@ -15,7 +15,7 @@ export default function Navbar() {
     if (isAuthPage) return null;
 
     return (
-        <nav className="fixed top-0 left-0 right-0 z-10 bg-[#0e0947] text-white md:flex items-center justify-between px-6 py-4  text-black shadow-lg shadow-black/10">
+        <nav className="fixed top-0 left-0 right-0 z-10 bg-[#0e0947] text-white md:flex items-center justify-between px-6 py-4   shadow-lg shadow-black/10">
 
             <Link href="/" className="flex items-center gap-2">
                 <Image src="/logo.png" alt="RiskWhiz Logo" width={60} height={60} className='text-white' />
