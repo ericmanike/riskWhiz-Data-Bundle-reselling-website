@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { CheckCircle2, XCircle, Clock, Wifi } from "lucide-react";
 import { redirect } from "next/navigation";
 import { formatCurrency } from "@/lib/utils";
+import CopyButton from "@/components/ui/CopyButton";
 
 export default async function HistoryPage() {
     const session = await getServerSession(authOptions);
@@ -67,6 +68,9 @@ export default async function HistoryPage() {
                                                     'text-orange-600'}`}>
                                             {order.status}
                                         </span>
+                                    </div>
+                                    <div className="mt-1 flex justify-end">
+                                        <CopyButton text={order.transaction_id} className="text-xs text-slate-500" prefix="ID:" />
                                     </div>
                                 </div>
                             </CardContent>

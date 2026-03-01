@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Users, ShoppingBag, CreditCard, Plus, Trash2, Edit, Package, Search, ChevronRight, CheckCircle2, Shield, X, XCircle, Clock, UserPlus, Wallet } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { formatCurrency } from "@/lib/utils";
+import CopyButton from "@/components/ui/CopyButton";
 
 export default function AdminDashboard() {
     const [stats, setStats] = useState({ users: 0, orders: 0, sales: 0 });
@@ -579,7 +580,9 @@ export default function AdminDashboard() {
                                     <tbody className="divide-y divide-zinc-100 whitespace-nowrap">
                                         {filteredOrders.map((order) => (
                                             <tr key={order._id} className="hover:bg-zinc-50 transition-colors">
-                                                <td className="px-6 py-4 font-mono text-xs text-zinc-500">#{order.transaction_id}</td>
+                                                <td className="px-6 py-4 font-mono text-xs text-zinc-500">
+                                                    <CopyButton text={order.transaction_id} prefix="#" />
+                                                </td>
                                                 <td className="px-6 py-4">
                                                     <div className="flex flex-col">
                                                         <span className="font-medium text-zinc-900">{order.user?.name || 'Unknown'}</span>

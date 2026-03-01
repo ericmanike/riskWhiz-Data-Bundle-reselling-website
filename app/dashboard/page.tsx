@@ -10,7 +10,7 @@ import { redirect } from "next/navigation";
 import { formatCurrency } from "@/lib/utils";
 import BecomeAgent from '@/components/ui/becomeAgent'
 import TopUpwallet from '@/components/ui/topUpwallet'
-
+import CopyButton from "@/components/ui/CopyButton";
 
 export default async function DashboardPage() {
 
@@ -160,7 +160,9 @@ export default async function DashboardPage() {
                                             </span>
 
                                         </div>
-                                        <span className="text-xs text-slate-950"> <strong>Order ID:</strong> {order.transaction_id}</span>
+                                        <span className="text-xs text-slate-950">
+                                            <strong>Order ID:</strong> <CopyButton text={order.transaction_id} />
+                                        </span>
                                     </div>
                                 </div>
                             ))
