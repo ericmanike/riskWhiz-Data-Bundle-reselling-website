@@ -143,6 +143,27 @@ export default function AdminDashboard() {
         }
     };
 
+    const handleMarkDelivered = async (orderId: string) => {
+        if (!confirm('Are you sure you want to mark this order as delivered?')) return;
+
+        try {
+            const res = await fetch(`/api/admin/orders/${orderId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: 'delivered' }),
+            });
+
+            if (res.ok) {
+                setOrders(orders.map(o => o._id === orderId ? { ...o, status: 'delivered' } : o));
+            } else {
+                alert('Failed to update order status');
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Error updating order');
+        }
+    };
+
     const handleDeleteOrder = async (orderId: string) => {
         if (!confirm('Are you sure you want to delete this order?')) return;
 
@@ -595,13 +616,24 @@ export default function AdminDashboard() {
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4 text-right">
-                                                    <button
-                                                        onClick={() => handleDeleteOrder(order._id)}
-                                                        className="p-2 text-zinc-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                                                        title="Delete order"
-                                                    >
-                                                        <Trash2 size={16} />
-                                                    </button>
+                                                    <div className="flex justify-end items-center gap-2">
+                                                        {order.status !== 'delivered' && order.status !== 'completed' && (
+                                                            <button
+                                                                onClick={() => handleMarkDelivered(order._id)}
+                                                                className="p-2 text-zinc-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-all"
+                                                                title="Mark as delivered"
+                                                            >
+                                                                <CheckCircle2 size={16} />
+                                                            </button>
+                                                        )}
+                                                        <button
+                                                            onClick={() => handleDeleteOrder(order._id)}
+                                                            className="p-2 text-zinc-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                                            title="Delete order"
+                                                        >
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))}
