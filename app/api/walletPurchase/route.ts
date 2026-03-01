@@ -112,7 +112,7 @@ export async function POST(req: Request) {
                     "x-api-key": `${DAKAZI_API_KEY}`,
                 }, 
                 body: JSON.stringify({
-                    recipient_msisdn: phoneNumber,
+                    recipient_msisdn: phoneNumber.trim(),
                     network_id: networkId,
                     shared_bundle: Number(bundleName),
                     incoming_api_ref: reference
@@ -122,7 +122,6 @@ export async function POST(req: Request) {
         );
 
        
-
         let orderRes;
 
 try {
@@ -138,18 +137,14 @@ try {
         message: "Provider error. Wallet refunded."
     }, { status: 500 });
 }
-           
-        console.log(`Order placement response: ${placeOrder.status}`);
-        console.log('Order placement success:', placeOrder.ok, 'Order response status:', orderRes.status);
-
+        console.log('Order placement response:', orderRes);
+  
+       
 
    
         // user.walletBalance = Number(user.walletBalance) - Number(price);
 
-           
-
-
-    if (!placeOrder.ok || orderRes.success !== true) {
+    if (orderRes.success !== true) {
        return NextResponse.json({ message: "Order failed. Wallet refunded." }, { status: 500 });
 }
         // Create order record
