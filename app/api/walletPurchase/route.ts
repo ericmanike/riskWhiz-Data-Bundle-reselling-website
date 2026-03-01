@@ -6,7 +6,7 @@ import Order from "@/models/Order";
 import User from "@/models/User";
 
 import Bundle from "@/models/Bundle";
-import { p } from "motion/react-client";
+
 
 export async function POST(req: Request) {
     try {
@@ -121,12 +121,25 @@ export async function POST(req: Request) {
 
         );
 
+       
 
-        const raw = await placeOrder.text();
-        const orderRes = JSON.parse(raw);
-        console.log('Dakazi order response:', orderRes);
+        let orderRes;
+
+try {
+    const raw = await placeOrder.text();
+    orderRes = JSON.parse(raw);
+} catch(error) {
+    console.log('Error placing order:', error);
+    await User.findByIdAndUpdate(session.user.id, {
+        $inc: { walletBalance: realPrice }
+    });
+
+    return NextResponse.json({
+        message: "Provider error. Wallet refunded."
+    }, { status: 500 });
+}
            
-        console.log(`Order placement response: ${placeOrder.status} - ${raw}`);
+        console.log(`Order placement response: ${placeOrder.status}`);
         console.log('Order placement success:', placeOrder.ok, 'Order response status:', orderRes.status);
 
 
@@ -137,10 +150,6 @@ export async function POST(req: Request) {
 
 
     if (!placeOrder.ok || orderRes.success !== true) {
-
-    await User.findByIdAndUpdate(session.user.id, {
-        $inc: { walletBalance: realPrice }
-    });
        return NextResponse.json({ message: "Order failed. Wallet refunded." }, { status: 500 });
 }
         // Create order record
