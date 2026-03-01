@@ -78,17 +78,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Payment verification failed" }, { status: 400 });
     }
 
-    const { amount, currency } = paystackData.data
+    const { amount } = paystackData.data
     
-  
             const tax = 0.02 * price
             let total = price + tax
             console.log('Total before rounding:', total)
             total = Math.round(total * 100)/100
             console.log('Total after rounding:', total)
  
-         
-  
        console.log('Payment amount:', amount / 100)
 
     if (amount / 100 !== Number(total)) {
@@ -100,6 +97,17 @@ export async function POST(req: Request) {
       console.log('Payment verification failed')
       return NextResponse.json({ message: "Payment verification failed" }, { status: 400 });
     }
+
+
+     const order = await Order.create({
+      user: session.user.id,
+      transaction_id: "Paid_"+reference,
+      network: network,
+      bundleName: bundleName,
+      price: price,
+      phoneNumber: phoneNumber,
+      status: 'pending',
+    });
 
     //place order
     const placeOrder = await fetch(
@@ -128,22 +136,16 @@ export async function POST(req: Request) {
 
       return NextResponse.json({ error: ' could not place an order' }, { status: 500 });
 
-
     }
 
 
 
     console.log(' purchase order response:', Orderres)
 
-    const order = await Order.create({
-      user: session.user.id,
-      transaction_id: Orderres.transaction_code,
-      network: network,
-      bundleName: bundleName,
-      price: price,
-      phoneNumber: phoneNumber,
-      status: 'pending',
-    });
+    const transaction_id = Orderres.transaction_code
+     await Order.findByIdAndUpdate(order._id, { transaction_id });    
+
+   
 
     console.log('📦 New order created:', order);
     return NextResponse.json({ message: "Order created successfully", order }, { status: 201 });
