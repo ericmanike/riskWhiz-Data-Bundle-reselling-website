@@ -7,8 +7,8 @@ import { FaPhone, FaWhatsapp } from "react-icons/fa";
 
 export default function Home() {
   return (
-    <div className=" md:mt-20 flex flex-col items-center min-h-[80vh] bg-zinc-50 pt-20">
-      
+    <div className=" md:mt-20 flex flex-col items-center min-h-[80vh] bg-gray-200 pt-20">
+
       {/* Hero Section */}
       <main className="w-[90vw] mx-auto flex flex-col items-center text-center px-6 mt-10">
 
@@ -30,7 +30,7 @@ export default function Home() {
           animate={{ opacity: 1, y: 0 }}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
-          transition={{ duration: 0.6 }}    
+          transition={{ duration: 0.6 }}
           className="mb-4 mt-4 p-4 bg-yellow-500 text-brown-500 rounded-2xl "
         >
           <Wifi size={40} />
@@ -39,7 +39,7 @@ export default function Home() {
         {/* Features */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8 w-[70vw] text-left">
 
-      
+
           <div className="p-6 rounded-2xl border bg-white shadow-sm hover:shadow-md transition">
             <Wifi className="text-blue-600 mb-3" size={24} />
             <h3 className="font-semibold mb-1 text-slate-900">
@@ -50,7 +50,7 @@ export default function Home() {
             </p>
           </div>
 
-               <div className="p-6 rounded-2xl border bg-white shadow-sm hover:shadow-md transition">
+          <div className="p-6 rounded-2xl border bg-white shadow-sm hover:shadow-md transition">
             <Shield className="text-green-500 mb-3" size={24} />
             <h3 className="font-semibold mb-1 text-slate-900">
               Affordable Prices
@@ -61,7 +61,7 @@ export default function Home() {
           </div>
 
 
-           <div className="md:col-span-2 p-6 rounded-2xl border bg-white shadow-sm hover:shadow-md transition">
+          <div className="md:col-span-2 p-6 rounded-2xl border bg-white shadow-sm hover:shadow-md transition">
             <Zap className="text-yellow-400 mb-3" size={24} />
             <h3 className="font-semibold mb-1 text-slate-900">
               Instant Delivery
@@ -78,13 +78,13 @@ export default function Home() {
         </div>
 
         {/* CTA */}
-       
-       <motion.div
+
+        <motion.div
           initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0  }}
+          animate={{ opacity: 1, y: 0 }}
           whileHover={{ scale: 1.005 }}
           whileTap={{ scale: 0.99 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}   className="w-[70vw] mt-10">
+          transition={{ duration: 0.5, ease: "easeOut" }} className="w-[70vw] mt-10">
           <Link href="/buy">
             <div className="rounded-xl bg-blue-600 text-white hover:bg-blue-700 
             transition cursor-pointer">
@@ -112,7 +112,7 @@ export default function Home() {
         <motion.a
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.1 }}    
+          transition={{ duration: 0.1 }}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           href="https://chat.whatsapp.com/JxpJjBisX0BGOO5BY8yWJJ?mode=gi_t"
@@ -125,13 +125,13 @@ export default function Home() {
           Join us on WhatsApp <FaWhatsapp />
         </motion.a>
 
-          
+
         <motion.a
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
-          transition={{ duration: 0.05 }}    
+          transition={{ duration: 0.05 }}
           href="https://wa.me/233551043686"
           className="flex items-center justify-center gap-2 bg-[#0e0947]
            text-white rounded-lg p-3    
@@ -145,7 +145,7 @@ export default function Home() {
           animate={{ opacity: 1, y: 0 }}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
-          transition={{ duration: 0.6 }}    
+          transition={{ duration: 0.6 }}
           href="/terms"
           className="flex items-center justify-center
            bg-[#0e0947] text-white rounded-lg p-3 

@@ -305,7 +305,7 @@ export default function AdminDashboard() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-zinc-50 flex items-center justify-center text-blue-600">
+            <div className="min-h-screen bg-gray-200 flex items-center justify-center text-blue-600">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-current"></div>
             </div>
         );
@@ -328,14 +328,14 @@ export default function AdminDashboard() {
 
     if (!stats.users) {
         return (
-            <div className="min-h-screen bg-zinc-50 flex items-center justify-center text-blue-600">
+            <div className="min-h-screen bg-gray-200 flex items-center justify-center text-blue-600">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-current"></div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-zinc-50 text-zinc-900 p-2 sm:p-4 md:p-8 pt-24 pb-24 md:pb-8 relative overflow-y-auto">
+        <div className="min-h-screen bg-gray-200 text-zinc-900 p-2 sm:p-4 md:p-8 pt-24 pb-24 md:pb-8 relative overflow-y-auto">
 
             {/* Modal Overlay */}
             {isBundleModalOpen && (

@@ -11,6 +11,7 @@ import { formatCurrency } from "@/lib/utils";
 import BecomeAgent from '@/components/ui/becomeAgent'
 import TopUpwallet from '@/components/ui/topUpwallet'
 import CopyButton from "@/components/ui/CopyButton";
+import CreateStore from '@/components/ui/CreateStore';
 
 export default async function DashboardPage() {
 
@@ -103,7 +104,10 @@ export default async function DashboardPage() {
                     </Card>
 
                 </div>
-                <div className='mt-5'> <BecomeAgent /></div>
+                <div className='mt-5 space-y-3'>
+                    <BecomeAgent />
+                    {/* <CreateStore /> */}
+                </div>
 
             </div>
 

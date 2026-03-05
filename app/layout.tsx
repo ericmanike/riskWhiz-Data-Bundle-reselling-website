@@ -26,9 +26,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-        <html  lang="en">
+    <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-zinc-50 text-zinc-900 mb-20 md:mb-0`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-200 text-zinc-900 mb-20 md:mb-0`}
       >
         <AuthProvider>
           <Navbar />
