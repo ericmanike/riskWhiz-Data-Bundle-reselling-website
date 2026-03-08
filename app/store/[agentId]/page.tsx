@@ -61,7 +61,7 @@ export default async function PublicStorePage({ params }: Props) {
 
     return (
         <div className="min-h-screen">
-            <div className="max-w-2xl mx-auto px-4 pb-16 pt-8 md:pt-14">
+            <div className="max-w-2xl mx-auto px-4 pb-16 pt-24 md:pt-28">
 
                 {/* Store Header */}
                 <div className="text-center mb-8">

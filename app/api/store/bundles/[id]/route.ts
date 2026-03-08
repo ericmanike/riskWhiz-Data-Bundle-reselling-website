@@ -7,7 +7,7 @@ import StoreBundle from "@/models/StoreBundle";
 // PATCH /api/store/bundles/[id] — update custom price for a store bundle
 export async function PATCH(
     req: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const session = await getServerSession(authOptions);
@@ -16,6 +16,7 @@ export async function PATCH(
         }
 
         const body = await req.json();
+        const { id } = await params;
         const { customPrice } = body;
 
         // Allow null to reset, or a positive number to set
@@ -31,7 +32,7 @@ export async function PATCH(
         await dbConnect();
 
         const updated = await StoreBundle.findOneAndUpdate(
-            { _id: params.id, agent: session.user.id },
+            { _id: id, agent: session.user.id },
             { customPrice: updateValue },
             { new: true }
         );
@@ -49,7 +50,7 @@ export async function PATCH(
 // DELETE /api/store/bundles/[id] — remove a bundle from agent's store
 export async function DELETE(
     _req: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const session = await getServerSession(authOptions);
@@ -57,10 +58,11 @@ export async function DELETE(
             return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
         }
 
+        const { id } = await params;
         await dbConnect();
 
         const deleted = await StoreBundle.findOneAndDelete({
-            _id: params.id,
+            _id: id,
             agent: session.user.id,
         });
 

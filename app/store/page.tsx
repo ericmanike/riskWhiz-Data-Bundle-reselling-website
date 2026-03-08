@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import {
     Store, Share2, ShoppingBag, TrendingUp, Link2, Plus, Trash2,
-    Pencil, Check, X, Loader2, Wifi, ChevronDown, ChevronRight
+    Pencil, Check, X, Loader2, Wifi, ChevronDown, ChevronRight, DownloadCloud, Wallet
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { formatCurrency } from '@/lib/utils';
@@ -75,6 +75,14 @@ export default function StoreManagementPage() {
     /* ── stats ── */
     const [totalSales, setTotalSales] = useState(0);
     const [revenue, setRevenue] = useState(0);
+    const [walletBalance, setWalletBalance] = useState(0);
+
+    /* ── withdraw logic ── */
+    const [showWithdraw, setShowWithdraw] = useState(false);
+    const [withdrawAmt, setWithdrawAmt] = useState('');
+    const [withdrawMethod, setWithdrawMethod] = useState('Mobile Money');
+    const [withdrawDetails, setWithdrawDetails] = useState('');
+    const [withdrawing, setWithdrawing] = useState(false);
 
     const storeLink =
         typeof window !== 'undefined'
@@ -104,6 +112,7 @@ export default function StoreManagementPage() {
                 if (d) {
                     setTotalSales(d.totalSales ?? 0);
                     setRevenue(d.revenue ?? 0);
+                    setWalletBalance(d.walletBalance ?? 0);
                     setStoreName(d.storeName ?? '');
                     setNameInput(d.storeName ?? '');
                 }
@@ -117,8 +126,8 @@ export default function StoreManagementPage() {
             const res = await fetch('/api/bundles');
             if (res.ok) {
                 const data: Bundle[] = await res.json();
-                // Show ALL active bundles from admin
-                setAllBundles(data.filter(b => b.isActive));
+                // Show ONLY active agent/reseller bundles
+                setAllBundles(data.filter(b => b.isActive && b.audience === 'agent'));
             }
         } finally {
             setLoadingAll(false);
@@ -131,14 +140,60 @@ export default function StoreManagementPage() {
         if (next && allBundles.length === 0) loadAllBundles();
     };
 
-    /* ── Add bundle with custom price ── */
-    const addBundle = async (bundle: Bundle) => {
-        const rawPrice = pickPrices[bundle._id];
-        const customPrice = rawPrice ? parseFloat(rawPrice) : undefined;
-        if (rawPrice && (isNaN(customPrice!) || customPrice! <= 0)) {
-            alert('Please enter a valid price');
+    const handleWithdraw = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const amt = parseFloat(withdrawAmt);
+        if (isNaN(amt) || amt <= 0 || amt > walletBalance) {
+            alert('Invalid amount or insufficient balance.');
             return;
         }
+        if (!withdrawDetails.trim()) {
+            alert('Please provide withdrawal details.');
+            return;
+        }
+
+        setWithdrawing(true);
+        try {
+            const res = await fetch('/api/store/withdraw', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    amount: amt,
+                    paymentMethod: withdrawMethod,
+                    details: withdrawDetails,
+                }),
+            });
+            if (res.ok) {
+                alert('Withdrawal request submitted successfully!');
+                setShowWithdraw(false);
+                setWalletBalance(prev => prev - amt);
+                setWithdrawAmt('');
+                setWithdrawDetails('');
+            } else {
+                const err = await res.json();
+                alert(err.message || 'Error processing request.');
+            }
+        } catch (error) {
+            alert('Something went wrong.');
+        } finally {
+            setWithdrawing(false);
+        }
+    };
+
+    /* ── Add bundle with custom price ── */
+    const addBundle = async (bundle: Bundle) => {
+        const rawProfit = pickPrices[bundle._id];
+        const profit = rawProfit ? parseFloat(rawProfit) : 0;
+        if (rawProfit && (isNaN(profit) || profit < 0)) {
+            alert('Please enter a valid profit amount');
+            return;
+        }
+
+        let customPrice: number | undefined;
+        if (profit > 0) {
+            customPrice = bundle.price + profit;
+        }
+
         setAdding(bundle._id);
         try {
             const res = await fetch('/api/store/bundles', {
@@ -289,7 +344,7 @@ export default function StoreManagementPage() {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 <Card className="border-0 shadow-sm bg-gradient-to-br from-orange-50 to-amber-50">
                     <CardContent className="p-4">
                         <div className="flex items-center gap-2 mb-1">
@@ -308,7 +363,76 @@ export default function StoreManagementPage() {
                         <p className="text-2xl font-bold text-zinc-900">{formatCurrency(revenue)}</p>
                     </CardContent>
                 </Card>
+                <Card className="border-0 shadow-sm bg-gradient-to-br from-blue-50 to-indigo-50 col-span-2 sm:col-span-1">
+                    <CardContent className="p-4 flex flex-col justify-between h-full">
+                        <div>
+                            <div className="flex items-center justify-between mb-1">
+                                <div className="flex items-center gap-2">
+                                    <Wallet size={14} className="text-blue-500" />
+                                    <span className="text-xs text-zinc-500 font-medium">Balance</span>
+                                </div>
+                            </div>
+                            <p className="text-2xl font-bold text-zinc-900">{formatCurrency(walletBalance)}</p>
+                        </div>
+                        <button onClick={() => setShowWithdraw(true)}
+                            className="mt-3 flex items-center justify-center gap-1.5 w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-1.5 rounded-lg transition-colors shadow-sm">
+                            <DownloadCloud size={12} />
+                            Withdraw
+                        </button>
+                    </CardContent>
+                </Card>
             </div>
+
+            {/* Withdraw Modal */}
+            {showWithdraw && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                        <div className="px-5 py-4 border-b border-zinc-100 flex items-center justify-between bg-blue-50/50">
+                            <h3 className="font-bold text-zinc-900 flex items-center gap-2">
+                                <DownloadCloud size={16} className="text-blue-600" />
+                                Withdraw Funds
+                            </h3>
+                            <button onClick={() => setShowWithdraw(false)} className="text-zinc-400 hover:text-zinc-600">
+                                <X size={16} />
+                            </button>
+                        </div>
+                        <form onSubmit={handleWithdraw} className="p-5 space-y-4">
+                            <div>
+                                <label className="block text-xs font-semibold text-zinc-600 mb-1.5">Amount (Max: {formatCurrency(walletBalance)})</label>
+                                <div className="relative">
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-zinc-400">GH₵</span>
+                                    <input type="number" step="0.01" min="0.01" max={walletBalance}
+                                        value={withdrawAmt} onChange={(e) => setWithdrawAmt(e.target.value)} required
+                                        className="w-full pl-10 pr-3 py-2 border border-zinc-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-semibold text-zinc-600 mb-1.5">Payment Method</label>
+                                <select value={withdrawMethod} onChange={(e) => setWithdrawMethod(e.target.value)}
+                                    className="w-full px-3 py-2 border border-zinc-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option>Mobile Money</option>
+                                    <option>Bank Transfer</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-semibold text-zinc-600 mb-1.5">
+                                    {withdrawMethod === 'Mobile Money' ? 'MoMo Number & Name' : 'Bank Details (Acct #, Bank, Name)'}
+                                </label>
+                                <textarea value={withdrawDetails} onChange={(e) => setWithdrawDetails(e.target.value)} required rows={2}
+                                    placeholder={withdrawMethod === 'Mobile Money' ? 'e.g. 024XXXXXXX, Kwabena...' : 'e.g. 1029XXX, Ecobank, Kwabena...'}
+                                    className="w-full px-3 py-2 border border-zinc-200 rounded-xl text-sm placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
+                            </div>
+
+                            <button type="submit" disabled={withdrawing || walletBalance <= 0}
+                                className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl transition-all shadow-md disabled:opacity-50">
+                                {withdrawing ? <Loader2 size={16} className="animate-spin" /> : 'Confirm Withdrawal'}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
 
             {/* Store Link */}
             <Card className="border border-orange-100 shadow-sm">
@@ -404,26 +528,31 @@ export default function StoreManagementPage() {
                                                                     </span>
                                                                 ) : (
                                                                     /* Price input + Add button */
-                                                                    <div className="flex items-center gap-2 shrink-0">
-                                                                        <div className="flex items-center gap-1 bg-zinc-50 border border-zinc-200 rounded-lg px-2 py-1">
-                                                                            <span className="text-[10px] text-zinc-400 font-medium">GH₵</span>
-                                                                            <input
-                                                                                type="number"
-                                                                                min="0.01"
-                                                                                step="0.01"
-                                                                                placeholder={String(bundle.price)}
-                                                                                value={priceVal}
-                                                                                onChange={e => setPickPrices(prev => ({ ...prev, [bundle._id]: e.target.value }))}
-                                                                                className="w-16 text-xs font-semibold text-zinc-900 bg-transparent focus:outline-none placeholder-zinc-300"
-                                                                            />
+                                                                    <div className="flex flex-col items-end gap-1 shrink-0">
+                                                                        <div className="text-[10px] font-bold text-zinc-500 mr-1">
+                                                                            Final: {formatCurrency(bundle.price + (parseFloat(priceVal) || 0))}
                                                                         </div>
-                                                                        <button
-                                                                            onClick={() => addBundle(bundle)}
-                                                                            disabled={isAdding}
-                                                                            className="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold px-2.5 py-1.5 rounded-lg transition-colors disabled:opacity-50">
-                                                                            {isAdding ? <Loader2 size={11} className="animate-spin" /> : <Plus size={11} />}
-                                                                            Add
-                                                                        </button>
+                                                                        <div className="flex items-center gap-2">
+                                                                            <div className="flex items-center gap-1 bg-zinc-50 border border-zinc-200 rounded-lg px-2 py-1">
+                                                                                <span className="text-[10px] text-zinc-400 font-medium">+ GH₵</span>
+                                                                                <input
+                                                                                    type="number"
+                                                                                    min="0"
+                                                                                    step="0.01"
+                                                                                    placeholder="Profit"
+                                                                                    value={priceVal}
+                                                                                    onChange={e => setPickPrices(prev => ({ ...prev, [bundle._id]: e.target.value }))}
+                                                                                    className="w-16 text-xs font-semibold text-zinc-900 bg-transparent focus:outline-none placeholder-zinc-300"
+                                                                                />
+                                                                            </div>
+                                                                            <button
+                                                                                onClick={() => addBundle(bundle)}
+                                                                                disabled={isAdding}
+                                                                                className="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold px-2.5 py-1.5 rounded-lg transition-colors disabled:opacity-50">
+                                                                                {isAdding ? <Loader2 size={11} className="animate-spin" /> : <Plus size={11} />}
+                                                                                Add
+                                                                            </button>
+                                                                        </div>
                                                                     </div>
                                                                 )}
                                                             </div>

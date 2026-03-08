@@ -4,7 +4,7 @@ import { useSession } from 'next-auth/react'
 import { Store, ArrowRight, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 
-function CreateStore() {
+function CreateStore({ hasStore }: { hasStore?: boolean }) {
     const { data: session } = useSession()
 
     if (session?.user?.role !== 'agent') return null
@@ -21,8 +21,8 @@ function CreateStore() {
                             <Store size={22} className="text-white" />
                         </div>
                         <div>
-                            <p className="font-bold text-white text-sm leading-tight">Create Your Store</p>
-                            <p className="text-white/80 text-xs mt-0.5">Sell data bundles as an agent</p>
+                            <p className="font-bold text-white text-sm leading-tight">{hasStore ? "Manage Your Store" : "Create Your Store"}</p>
+                            <p className="text-white/80 text-xs mt-0.5">{hasStore ? "View stats, withdraw and add bundles" : "Sell data bundles as an agent"}</p>
                         </div>
                     </div>
 

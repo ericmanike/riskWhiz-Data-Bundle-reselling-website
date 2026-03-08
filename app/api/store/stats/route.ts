@@ -15,7 +15,7 @@ export async function GET() {
 
         await dbConnect();
 
-        const user = await User.findById(session.user.id).select("storeName");
+        const user = await User.findById(session.user.id).select("storeName walletBalance");
 
         const totalSales = await Order.countDocuments({ user: session.user.id });
 
@@ -28,6 +28,7 @@ export async function GET() {
             storeName: user?.storeName ?? "",
             totalSales,
             revenue: revenueResult[0]?.total ?? 0,
+            walletBalance: user?.walletBalance ?? 0,
         });
     } catch {
         return NextResponse.json({ message: "Error fetching stats" }, { status: 500 });

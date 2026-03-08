@@ -28,14 +28,14 @@ export default async function HistoryPage() {
 
             <div className="space-y-4">
                 {orders.length === 0 ? (
-                    <Card>
+                    <Card className="bg-white border-0 shadow-lg">
                         <CardContent className="p-8 text-center text-slate-700">
                             <p>No transaction history found.</p>
                         </CardContent>
                     </Card>
                 ) : (
                     orders.map((order) => (
-                        <Card key={order._id.toString()} className="hover:border-blue-400 transition-colors">
+                        <Card key={order._id.toString()} className="bg-white border-0 shadow-lg hover:shadow-xl transition-all">
                             <CardContent className="p-4 flex items-center justify-between">
                                 <div className="flex items-center gap-4">
                                     <div className={`w-10 h-10 rounded-full flex items-center justify-center 

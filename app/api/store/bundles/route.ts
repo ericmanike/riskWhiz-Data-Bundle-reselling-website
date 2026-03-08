@@ -42,10 +42,13 @@ export async function POST(req: Request) {
 
         await dbConnect();
 
-        // Verify the bundle exists
+        // Verify the bundle exists and is meant for agents
         const bundle = await Bundle.findById(bundleId);
         if (!bundle) {
             return NextResponse.json({ message: "Bundle not found" }, { status: 404 });
+        }
+        if (bundle.audience !== 'agent') {
+            return NextResponse.json({ message: "Only agent bundles can be added to the store" }, { status: 403 });
         }
 
         const storeBundle = await StoreBundle.findOneAndUpdate(
