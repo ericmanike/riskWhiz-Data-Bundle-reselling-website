@@ -5,7 +5,7 @@ import dbConnect from "@/lib/mongoose";
 import Withdrawal from "@/models/Withdrawal";
 import User from "@/models/User";
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
         const session = await getServerSession(authOptions);
         if (!session || session.user.role !== 'admin') {
