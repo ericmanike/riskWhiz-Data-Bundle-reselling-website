@@ -7,13 +7,14 @@ import CopyButton from "@/components/ui/CopyButton";
 
 export default function AdminDashboard() {
     const [stats, setStats] = useState({ users: 0, orders: 0, sales: 0 });
-    const [activeTab, setActiveTab] = useState<'overview' | 'orders' | 'users' | 'bundles'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'orders' | 'users' | 'bundles' | 'withdrawals'>('overview');
     const [loading, setLoading] = useState(true);
 
     // Data States
     const [users, setUsers] = useState<any[]>([]);
     const [orders, setOrders] = useState<any[]>([]);
     const [bundles, setBundles] = useState<any[]>([]);
+    const [withdrawals, setWithdrawals] = useState<any[]>([]);
 
     // Modal & Form State
     const [isBundleModalOpen, setIsBundleModalOpen] = useState(false);
@@ -47,6 +48,7 @@ export default function AdminDashboard() {
 
     const [orderSearchQuery, setOrderSearchQuery] = useState('');
     const [userSearchQuery, setUserSearchQuery] = useState('');
+    const [withdrawalSearchQuery, setWithdrawalSearchQuery] = useState('');
 
 
     useEffect(() => {
@@ -77,6 +79,7 @@ export default function AdminDashboard() {
             // Load extra data if authenticated
             loadTabSpecificData('orders'); // Preload or load lazy
             loadTabSpecificData('users');
+            loadTabSpecificData('withdrawals');
 
         } catch (error) {
             console.error("Failed to fetch admin data", error);
@@ -95,10 +98,35 @@ export default function AdminDashboard() {
                 const res = await fetch('/api/admin/users');
                 if (res.ok) setUsers(await res.json());
             }
+            if (tab === 'withdrawals') {
+                const res = await fetch('/api/admin/withdrawals');
+                if (res.ok) setWithdrawals(await res.json());
+            }
         } catch (e) {
             console.error(e);
         }
     }
+
+    const handleUpdateWithdrawal = async (id: string, status: 'approved' | 'rejected') => {
+        if (!confirm(`Are you sure you want to mark this withdrawal as ${status}?`)) return;
+        try {
+            const res = await fetch(`/api/admin/withdrawals/${id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status })
+            });
+            if (res.ok) {
+                setWithdrawals(withdrawals.map(w => w._id === id ? { ...w, status } : w));
+                alert(`Withdrawal ${status} successfully.`);
+            } else {
+                const err = await res.json();
+                alert(err.message || 'Failed to update withdrawal');
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Error updating withdrawal');
+        }
+    };
 
     // Effect to lazy load data when tab changes if needed (already preloaded above for simplicity)
     useEffect(() => {
@@ -326,6 +354,12 @@ export default function AdminDashboard() {
         (user.role?.toLowerCase() || '').includes(userSearchQuery.toLowerCase())
     );
 
+    const filteredWithdrawals = withdrawals.filter(w =>
+        (w.agentId?.name?.toLowerCase() || '').includes(withdrawalSearchQuery.toLowerCase()) ||
+        (w.details?.toLowerCase() || '').includes(withdrawalSearchQuery.toLowerCase()) ||
+        (w.status?.toLowerCase() || '').includes(withdrawalSearchQuery.toLowerCase())
+    );
+
     if (!stats.users) {
         return (
             <div className="min-h-screen bg-gray-200 flex items-center justify-center text-blue-600">
@@ -455,6 +489,7 @@ export default function AdminDashboard() {
                             { id: 'orders', label: 'Orders', icon: ShoppingBag },
                             { id: 'users', label: 'Users', icon: Users },
                             { id: 'bundles', label: 'Bundles', icon: Package },
+                            { id: 'withdrawals', label: 'Withdrawals', icon: Wallet },
                         ].map((tab) => (
                             <button
                                 key={tab.id}
@@ -927,6 +962,107 @@ export default function AdminDashboard() {
                                 </div>
                             </Card>
                         </div>
+                    )}
+
+                    {/* WITHDRAWALS TAB */}
+                    {activeTab === 'withdrawals' && (
+                        <Card className="border-0 shadow-lg bg-white overflow-hidden">
+                            <div className="p-4 md:p-6 border-b border-zinc-100 flex flex-col sm:flex-row justify-between sm:items-center gap-4 bg-white">
+                                <h3 className="text-lg font-semibold text-zinc-900">Agent Withdrawals</h3>
+                                <div className="relative w-full sm:w-64">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" size={16} />
+                                    <input
+                                        type="text"
+                                        placeholder="Search withdrawals..."
+                                        value={withdrawalSearchQuery}
+                                        onChange={(e) => setWithdrawalSearchQuery(e.target.value)}
+                                        className="bg-zinc-50 border border-zinc-200 rounded-lg pl-10 pr-4 py-2 text-sm text-zinc-900 focus:outline-none focus:border-blue-500 transition-colors w-full placeholder-zinc-400"
+                                    />
+                                </div>
+                            </div>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm text-left">
+                                    <thead className="bg-zinc-50 text-zinc-500 font-medium whitespace-nowrap">
+                                        <tr>
+                                            <th className="px-6 py-4 border-b">Agent</th>
+                                            <th className="px-6 py-4 border-b">Amount</th>
+                                            <th className="px-6 py-4 border-b">Method & Details</th>
+                                            <th className="px-6 py-4 border-b">Date</th>
+                                            <th className="px-6 py-4 border-b">Status</th>
+                                            <th className="px-6 py-4 border-b text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-zinc-100 whitespace-nowrap">
+                                        {filteredWithdrawals.map((w) => (
+                                            <tr key={w._id} className="hover:bg-zinc-50 transition-colors">
+                                                <td className="px-6 py-4">
+                                                    <div className="flex flex-col">
+                                                        <span className="font-medium text-zinc-900">{w.agentId?.name || 'Unknown'}</span>
+                                                        <span className="text-xs text-zinc-500">{w.agentId?.phoneNumber || w.agentId?.email}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4 font-bold text-zinc-700">{formatCurrency(w.amount)}</td>
+                                                <td className="px-6 py-4">
+                                                    <div className="flex flex-col">
+                                                        <span className="font-medium text-zinc-800">{w.paymentMethod}</span>
+                                                        <span className="text-xs text-zinc-500">{w.details}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="flex flex-col">
+                                                        <span className="text-zinc-600">{new Date(w.createdAt).toLocaleDateString()}</span>
+                                                        <span className="text-[10px] text-zinc-400 font-medium">
+                                                            {new Date(w.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border
+                                                        ${w.status === 'approved' ? 'bg-green-100 text-green-700 border-green-200' :
+                                                            w.status === 'rejected' ? 'bg-red-100 text-red-700 border-red-200' :
+                                                                'bg-orange-100 text-orange-700 border-orange-200'}`}>
+                                                        {w.status === 'approved' && <CheckCircle2 size={12} />}
+                                                        {w.status === 'rejected' && <XCircle size={12} />}
+                                                        {w.status === 'pending' && <Clock size={12} />}
+                                                        <span className="capitalize">{w.status}</span>
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 text-right">
+                                                    {w.status === 'pending' ? (
+                                                        <div className="flex justify-end items-center gap-2">
+                                                            <button
+                                                                onClick={() => handleUpdateWithdrawal(w._id, 'approved')}
+                                                                className="px-3 py-1.5 bg-green-50 text-green-600 hover:bg-green-600 hover:text-white rounded-lg transition-all text-xs font-semibold"
+                                                                title="Approve"
+                                                            >
+                                                                Approve
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleUpdateWithdrawal(w._id, 'rejected')}
+                                                                className="px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white rounded-lg transition-all text-xs font-semibold"
+                                                                title="Reject"
+                                                            >
+                                                                Reject
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <span className="text-xs text-zinc-400 italic">Processed</span>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        {filteredWithdrawals.length === 0 && (
+                                            <tr>
+                                                <td colSpan={6} className="px-6 py-12 text-center text-zinc-500">
+                                                    <Wallet size={32} className="mx-auto mb-2 opacity-30 text-zinc-400" />
+                                                    <p>No withdrawals found</p>
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </Card>
                     )}
                 </div>
             </div >

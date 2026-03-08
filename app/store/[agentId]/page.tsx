@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import dbConnect from "@/lib/mongoose";
 import User from "@/models/User";
 import StoreBundle from "@/models/StoreBundle";
+import "@/models/Bundle"; // Ensure Bundle model is initialized before populate
 import { Card, CardContent } from "@/components/ui/Card";
 import { Store, Wifi } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
