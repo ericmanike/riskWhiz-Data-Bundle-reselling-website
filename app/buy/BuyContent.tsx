@@ -75,7 +75,7 @@ export default function BuyContent() {
             const ref = searchParams.get("ref");
             // If there's a referral agent, fetch their store bundles/prices
             const url = ref ? `/api/publicStore/${ref}/bundles` : '/api/bundles';
-            
+
             const res = await fetch(url);
             if (res.ok) {
                 const data = await res.json();
@@ -139,13 +139,14 @@ export default function BuyContent() {
                 callback: function (response) {
                     (async () => {
                         try {
-                            const verifyResponse = await fetch('/api/store/purchase', {
+                            const verifyResponse = await fetch('/api/orders', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({
                                     reference: reference,
-                                    storeBundleId: selectedBundle.storeBundleId || searchParams.get("storeBundleId"),
                                     network: selectedNetwork,
+                                    bundleName: selectedBundle.name.replace("GB", ""),
+                                    price: selectedBundle.price,
                                     phoneNumber: phoneNumber,
                                 }),
                             });
@@ -190,13 +191,13 @@ export default function BuyContent() {
 
         setLoading(true);
         try {
-            const response = await fetch('/api/store/purchase', {
+            const response = await fetch('/api/walletPurchase', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    paymentMethod: 'wallet',
-                    storeBundleId: selectedBundle.storeBundleId || searchParams.get("storeBundleId"),
                     network: selectedNetwork,
+                    bundleName: selectedBundle.name.replace("GB", ""),
+                    price: selectedBundle.price,
                     phoneNumber: phoneNumber,
                 }),
             });

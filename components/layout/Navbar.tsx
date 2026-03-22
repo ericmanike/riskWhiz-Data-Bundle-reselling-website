@@ -12,7 +12,8 @@ export default function Navbar() {
     const { data: session } = useSession();
 
     const isAuthPage = pathname?.startsWith('/auth');
-    if (isAuthPage) return null;
+    const isPublicStore = pathname !== '/store' && pathname?.split('/').length >= 3 && pathname?.startsWith('/store');
+    if (isAuthPage || isPublicStore) return null;
 
     return (
         <nav className="fixed top-0 left-0 right-0 z-10 bg-[#0e0947] text-white md:flex items-center justify-between px-6 py-4   shadow-lg shadow-black/10">

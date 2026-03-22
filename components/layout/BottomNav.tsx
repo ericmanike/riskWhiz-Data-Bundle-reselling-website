@@ -11,7 +11,8 @@ export default function BottomNav() {
     const { data: session } = useSession();
 
     const isAuthPage = pathname?.startsWith('/auth');
-    if (isAuthPage) return null;
+    const isPublicStore = pathname !== '/store' && pathname?.split('/').length >= 3 && pathname?.startsWith('/store');
+    if (isAuthPage || isPublicStore) return null;
 
     const navItems = [
         { icon: Home, label: 'Home', href: '/' },

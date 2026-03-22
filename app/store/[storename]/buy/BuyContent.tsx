@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams, useParams } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/Card";
-import { ChevronRight, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import clsx from "clsx";
 import { formatCurrency } from "@/lib/utils";
 import { useSession } from "next-auth/react"
@@ -51,6 +51,7 @@ export default function BuyContent() {
     const [bundles, setBundles] = useState<any[]>([]);
     const [loadingBundles, setLoadingBundles] = useState(false);
     const { data: session } = useSession()
+    const [email, setEmail] = useState(session?.user?.email || "");
 
     const [message, setMessage] = useState("")
   
@@ -79,6 +80,11 @@ export default function BuyContent() {
 
         if (phoneNumber.length < 10) {
             alert("Valid Phone number is required")
+            return
+        }
+
+        if (!email || !email.includes("@")) {
+            alert("Valid Email is required for payment")
             return
         }
 
@@ -115,7 +121,7 @@ export default function BuyContent() {
 
             const handler = window.PaystackPop.setup({
                 key: paystackKey!,
-                email: session?.user?.email!|| 'guest@gmail.com',
+                email: email || 'guest@gmail.com',
                 currency: 'GHS',
                 amount: Math.round(total * 100), // Convert to kobo
 
@@ -207,7 +213,7 @@ export default function BuyContent() {
     };
 
     return (
-        <div className="p-4 md:max-w-[60%] mx-auto min-h-screen md:pt-35 pt-24 z-0">
+        <div className="p-4 w-[80%] mx-auto min-h-screen z-0">
             <h1 className="text-2xl font-bold mb-6">Buy Data Bundle</h1>
 
      
@@ -219,10 +225,10 @@ export default function BuyContent() {
 
                     <div className="flex items-center gap-2 mb-4">
                         <button onClick={() => router.back()} className="text-sm text-zinc-500 hover:text-zinc-900">
-                            Back
+                          <ArrowLeft /> 
                         </button>
                         <span className="text-zinc-300">/</span>
-                        <span className="text-sm font-semibold">{initialBundle}</span>
+                        <span className="text-sm font-semibold">{initialNetwork}</span>
                     </div>
 
                     <Card>
@@ -238,6 +244,19 @@ export default function BuyContent() {
                                     className="w-full px-4 py-3 rounded-xl border border-slate-900 bg-white text-black placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-white text-lg tracking-wide"
                                     placeholder="024 XXX XXXX"
                                     autoFocus
+                                />
+                            </div>
+
+                            <div className="mb-6">
+                                <label className="text-sm font-medium text-black mb-2 block">
+                                    Email Address (for Paystack receipt)
+                                </label>
+                                <input
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="w-full px-4 py-3 rounded-xl border border-slate-900 bg-white text-black placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-white text-lg tracking-wide"
+                                    placeholder="your-email@example.com"
                                 />
                             </div>
 

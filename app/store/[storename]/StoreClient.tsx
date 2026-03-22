@@ -50,22 +50,8 @@ export default function StoreClient({ storeName, storeSlug, agentId, storeBundle
 
     return (
         <div className="min-h-screen">
-            <div className="w-[95%] md:w-[70%] mx-auto px-4 pb-16 pt-24 md:pt-28">
+            <div className="w-[95%] md:w-[70%] mx-auto px-4 pb-16">
 
-                {/* Store Header */}
-                <div className="text-center mb-8">
-                    <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-orange-500 to-amber-400 flex items-center justify-center mx-auto mb-4 shadow-xl shadow-orange-200">
-                        <Store size={36} className="text-white" />
-                    </div>
-                    <h1 className="text-3xl font-extrabold text-zinc-900 tracking-tight">{storeName}</h1>
-                    <p className="text-zinc-500 text-sm mt-1">Powered by <span className="font-semibold text-orange-500">Risk Whiz</span></p>
-
-                    {/* Live badge */}
-                    <span className="inline-flex items-center gap-1.5 mt-3 bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full">
-                        <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                        Open &amp; Active
-                    </span>
-                </div>
 
                 {hasAnyBundles && (
                     <div className="flex flex-wrap items-center gap-2 mb-8 bg-zinc-50 p-1.5 rounded-xl border border-zinc-100">
