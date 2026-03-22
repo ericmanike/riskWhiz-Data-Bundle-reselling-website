@@ -80,8 +80,12 @@ export default function BuyContent() {
             if (res.ok) {
                 const data = await res.json();
                 // Filter bundles by selected network
+                // Determine which audience bundles to show based on user role
+                const userRole = session?.user?.role;
+                const targetAudience = (userRole === 'agent' || userRole === 'admin') ? 'agent' : 'user';
+
                 const filtered = data.filter((b: any) => {
-                    return b.network === selectedNetwork;
+                    return b.network === selectedNetwork && b.audience === targetAudience;
                 });
 
                 setBundles(filtered);
