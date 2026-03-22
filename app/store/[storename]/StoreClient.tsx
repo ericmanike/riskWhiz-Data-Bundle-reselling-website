@@ -1,27 +1,16 @@
-import { notFound } from "next/navigation";
-import dbConnect from "@/lib/mongoose";
-import User from "@/models/User";
-import StoreBundle from "@/models/StoreBundle";
-import "@/models/Bundle"; // Ensure Bundle model is initialized before populate
+'use client';
+
+import { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/Card";
 import { Store, Wifi } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import Link from "next/link";
-import type { Metadata } from "next";
 
-interface Props {
-    params: Promise<{ agentId: string }>;
-}
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-    const { agentId } = await params;
-    await dbConnect();
-    const agent = await User.findById(agentId).select("name storeName");
-    const displayName = agent?.storeName || `${agent?.name}'s Store`;
-    return {
-        title: `${displayName} | Risk Whiz`,
-        description: `Buy data bundles from ${displayName} on Risk Whiz.`,
-    };
+interface StoreClientProps {
+    storeName: string;
+    storeSlug: string;
+    agentId: string;
+    storeBundles: any[];
 }
 
 const NETWORK_COLORS: Record<string, { bg: string; text: string; ring: string; badge: string }> = {
@@ -30,39 +19,38 @@ const NETWORK_COLORS: Record<string, { bg: string; text: string; ring: string; b
     AirtelTigo: { bg: "bg-blue-700", text: "text-white", ring: "ring-blue-300", badge: "bg-blue-100 text-blue-800" },
 };
 
-export default async function PublicStorePage({ params }: Props) {
-    const { agentId } = await params;
-    await dbConnect();
+export default function StoreClient({ storeName, storeSlug, agentId, storeBundles }: StoreClientProps) {
+    const [networkFilter, setNetworkFilter] = useState<'all' | 'MTN' | 'Telecel' | 'AirtelTigo'>('all');
 
-    const agent = await User.findById(agentId).select("name storeName role");
-    if (!agent || agent.role !== "agent") notFound();
+    // Filter and sort bundles
+    const sortedBundles = [...storeBundles].sort((a, b) => {
+        const priceA = a.customPrice ?? a.bundle?.price ?? 0;
+        const priceB = b.customPrice ?? b.bundle?.price ?? 0;
+        return priceA - priceB;
+    });
 
-    const storeName = agent.storeName?.trim() || `${agent.name}'s Store`;
+    const filteredBundles = sortedBundles.filter(sb => {
+        if (!sb.bundle) return false;
 
-    // Fetch store bundles with bundle details populated
-    const storeBundlesRaw = await StoreBundle.find({
-        agent: agentId,
-        isVisible: true,
-    }).populate("bundle");
-
-    // Filter out bundles where populate may have failed or bundle is inactive
-    const storeBundles = storeBundlesRaw.filter(
-        (sb) => sb.bundle && (sb.bundle as any).isActive
-    );
+        const net = sb.bundle.network;
+        return networkFilter === 'all' || net === networkFilter;
+    });
 
     // Group by network
     const grouped: Record<string, typeof storeBundles> = {};
-    for (const sb of storeBundles) {
-        const net = (sb.bundle as any).network as string;
+    for (const sb of filteredBundles) {
+        const net = sb.bundle.network as string;
         if (!grouped[net]) grouped[net] = [];
         grouped[net].push(sb);
     }
 
-    const networks = Object.keys(grouped);
+    const networks = Object.keys(grouped)
+        .sort((a, b) => { const o: any = { MTN: 1, Telecel: 2, AirtelTigo: 3 }; return (o[a] || 9) - (o[b] || 9); });
+    const hasAnyBundles = storeBundles.length > 0;
 
     return (
         <div className="min-h-screen">
-            <div className="max-w-2xl mx-auto px-4 pb-16 pt-24 md:pt-28">
+            <div className="w-[95%] md:w-[70%] mx-auto px-4 pb-16 pt-24 md:pt-28">
 
                 {/* Store Header */}
                 <div className="text-center mb-8">
@@ -79,8 +67,25 @@ export default async function PublicStorePage({ params }: Props) {
                     </span>
                 </div>
 
-                {/* Empty state */}
-                {networks.length === 0 && (
+                {hasAnyBundles && (
+                    <div className="flex flex-wrap items-center gap-2 mb-8 bg-zinc-50 p-1.5 rounded-xl border border-zinc-100">
+                        {(['all', 'MTN', 'Telecel', 'AirtelTigo'] as const).map(net => (
+                            <button
+                                key={net}
+                                onClick={() => setNetworkFilter(net)}
+                                className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${networkFilter === net
+                                    ? 'bg-white text-orange-600 shadow-sm border border-orange-200/50'
+                                    : 'text-zinc-500 hover:text-zinc-700 hover:bg-zinc-100'
+                                    }`}
+                            >
+                                {net === 'all' ? 'All Networks' : net}
+                            </button>
+                        ))}
+                    </div>
+                )}
+
+                {/* Empty state entirely */}
+                {!hasAnyBundles && (
                     <Card className="text-center py-16 border-dashed border-2 border-zinc-200">
                         <CardContent>
                             <div className="w-14 h-14 bg-zinc-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -90,6 +95,21 @@ export default async function PublicStorePage({ params }: Props) {
                             <p className="text-sm text-zinc-400 mt-1">This agent hasn&apos;t added any bundles to their store.</p>
                         </CardContent>
                     </Card>
+                )}
+
+                {/* No matching bundles for search/filter */}
+                {hasAnyBundles && networks.length === 0 && (
+                    <div className="text-center py-12">
+                        <Wifi size={32} className="mx-auto text-zinc-300 mb-3" />
+                        <p className="text-zinc-600 font-medium">No bundles found for this network.</p>
+                        <p className="text-zinc-400 text-sm mt-1">Try selecting a different network filter.</p>
+                        <button
+                            onClick={() => setNetworkFilter('all')}
+                            className="mt-4 text-orange-500 font-semibold hover:text-orange-600 text-sm"
+                        >
+                            Clear Filters
+                        </button>
+                    </div>
                 )}
 
                 {/* Bundles grouped by network */}
@@ -120,10 +140,10 @@ export default async function PublicStorePage({ params }: Props) {
                                     return (
                                         <Link
                                             key={sb._id.toString()}
-                                            href={`/buy?network=${encodeURIComponent(network)}&bundle=${encodeURIComponent(bundle._id)}&ref=${agentId}`}
+                                            href={`/store/${storeSlug}/buy?network=${encodeURIComponent(network)}&size=${encodeURIComponent(bundle.name)}&price=${encodeURIComponent(displayPrice)}&bundle=${encodeURIComponent(bundle._id)}&ref=${agentId}&storeBundleId=${encodeURIComponent(sb._id)}`}
                                             className="block"
                                         >
-                                            <div className={`relative rounded-2xl p-4 ${colors.bg} ${colors.text} shadow-md hover:shadow-xl hover:scale-[1.03] transition-all duration-200 cursor-pointer`}>
+                                            <div className={`relative group rounded-2xl p-4 ${colors.bg} ${colors.text} shadow-md hover:shadow-xl hover:scale-[1.03] transition-all duration-200 cursor-pointer`}>
                                                 {/* Network badge */}
                                                 <span className={`absolute top-2 right-2 text-[9px] font-bold px-1.5 py-0.5 rounded-full ${colors.badge}`}>
                                                     {network}
@@ -132,6 +152,10 @@ export default async function PublicStorePage({ params }: Props) {
                                                 <Wifi size={20} className="opacity-70 mb-2" />
                                                 <p className="font-extrabold text-xl leading-tight">{bundle.name}</p>
                                                 <p className="font-semibold text-sm opacity-90 mt-0.5">{formatCurrency(displayPrice)}</p>
+
+                                                <div className="mt-4 bg-white text-black py-2 rounded-xl text-center text-xs font-bold shadow-sm transition-colors group-hover:bg-zinc-100">
+                                                    Buy Now
+                                                </div>
                                             </div>
                                         </Link>
                                     );
@@ -149,3 +173,4 @@ export default async function PublicStorePage({ params }: Props) {
         </div>
     );
 }
+

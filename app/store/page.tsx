@@ -72,6 +72,9 @@ export default function StoreManagementPage() {
     const [priceInput, setPriceInput] = useState('');
     const [savingPrice, setSavingPrice] = useState<string | null>(null);
 
+    /* ── filters ── */
+    const [networkFilter, setNetworkFilter] = useState<'all' | 'MTN' | 'Telecel' | 'AirtelTigo'>('all');
+
     /* ── stats ── */
     const [totalSales, setTotalSales] = useState(0);
     const [revenue, setRevenue] = useState(0);
@@ -86,12 +89,12 @@ export default function StoreManagementPage() {
 
     const storeLink =
         typeof window !== 'undefined'
-            ? `${window.location.origin}/store/${session?.user?.id}`
+            ? `${window.location.origin}/store/${(storeName || session?.user?.id || '').trim().replace(/\s+/g, '-').toLowerCase()}`
             : '';
 
     useEffect(() => {
         if (status === 'loading') return;
-        if (!session || session.user.role !== 'agent') router.replace('/dashboard');
+        if (!session || session.user.role !== 'agent' && session.user.role !== 'admin') router.replace('/dashboard');
     }, [session, status, router]);
 
     const loadStoreBundles = useCallback(async () => {
@@ -166,7 +169,7 @@ export default function StoreManagementPage() {
             if (res.ok) {
                 alert('Withdrawal request submitted successfully!');
                 setShowWithdraw(false);
-                setWalletBalance(prev => prev - amt);
+                setRevenue(prev => prev - amt);
                 setWithdrawAmt('');
                 setWithdrawDetails('');
             } else {
@@ -278,17 +281,25 @@ export default function StoreManagementPage() {
 
     /* ── derived ── */
     const addedBundleIds = new Set(storeBundles.map(sb => sb.bundle?._id));
+    const sortedStoreBundles = [...storeBundles].sort((a, b) => {
+        const p1 = a.customPrice ?? a.bundle?.price ?? 0;
+        const p2 = b.customPrice ?? b.bundle?.price ?? 0;
+        return p1 - p2;
+    });
+
     const grouped: Record<string, StoreBundle[]> = {};
-    for (const sb of storeBundles) {
+    for (const sb of sortedStoreBundles) {
         if (!sb.bundle) continue;
+        if (networkFilter !== 'all' && sb.bundle.network !== networkFilter) continue;
         const net = sb.bundle.network;
         if (!grouped[net]) grouped[net] = [];
         grouped[net].push(sb);
     }
 
     // Group all-bundles by network for the picker
+    const sortedAllBundles = [...allBundles].sort((a, b) => (a.price || 0) - (b.price || 0));
     const allGrouped: Record<string, Bundle[]> = {};
-    for (const b of allBundles) {
+    for (const b of sortedAllBundles) {
         if (!allGrouped[b.network]) allGrouped[b.network] = [];
         allGrouped[b.network].push(b);
     }
@@ -302,12 +313,12 @@ export default function StoreManagementPage() {
     }
 
     return (
-        <div className="p-4 space-y-6 max-w-4xl mx-auto md:pt-28 pt-24 pb-16">
-
+        <div className="p-4 space-y-6 w-[95%] md:w-[80%] mx-auto md:pt-28 pt-24 pb-16">
+ 
             {/* Header */}
-            <div className="flex items-start justify-between gap-4">
+            <div className=" mt-5 flex items-start justify-between gap-4">
                 <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-400 flex items-center justify-center shadow-lg shadow-orange-200 shrink-0">
+                    <div className="w-12 h-12 rounded-[10px] bg-gradient-to-br from-orange-500 to-amber-400 flex items-center justify-center shadow-lg shadow-orange-200 shrink-0">
                         <Store size={24} className="text-white" />
                     </div>
                     <div>
@@ -318,7 +329,7 @@ export default function StoreManagementPage() {
                                     autoFocus maxLength={40} />
                                 <button onClick={saveStoreName} disabled={savingName}
                                     className="w-7 h-7 rounded-full bg-green-500 flex items-center justify-center text-white hover:bg-green-600 disabled:opacity-50">
-                                    {savingName ? <Loader2 size={12} className="animate-spin" /> : <Check size={13} />}
+                                    {savingName ? <Loader2 size={12} className="animate-spin" /> : <Check size={15}  className=''/>}
                                 </button>
                                 <button onClick={() => { setEditingName(false); setNameInput(storeName); }}
                                     className="w-7 h-7 rounded-full bg-zinc-200 flex items-center justify-center hover:bg-zinc-300">
@@ -327,9 +338,9 @@ export default function StoreManagementPage() {
                             </div>
                         ) : (
                             <div className="flex items-center gap-2">
-                                <h1 className="text-2xl font-bold text-zinc-900">{storeName || 'My Store'}</h1>
+                                <h1 className="text-sm  font-bold text-zinc-900">{storeName || 'My Store'}</h1>
                                 <button onClick={() => { setEditingName(true); setNameInput(storeName); }}
-                                    className="w-6 h-6 rounded-full bg-zinc-100 flex items-center justify-center hover:bg-orange-100 text-zinc-400 hover:text-orange-500 transition-colors">
+                                    className="w-6 h-6 rounded-full bg-zinc-100 flex items-center justify-center hover:bg-orange-200 text-zinc-400 hover:text-orange-500 transition-colors">
                                     <Pencil size={11} />
                                 </button>
                             </div>
@@ -337,57 +348,63 @@ export default function StoreManagementPage() {
                         <p className="text-zinc-500 text-sm">Manage your store &amp; bundles</p>
                     </div>
                 </div>
-                <a href={`/store/${session.user.id}`} target="_blank"
+                <a href={`/store/${(storeName || session?.user?.id || '').trim().replace(/\s+/g, '-').toLowerCase()}`} target="_blank"
                     className="shrink-0 text-xs font-semibold bg-orange-50 text-orange-600 border border-orange-200 px-3 py-1.5 rounded-lg hover:bg-orange-100 transition-colors">
                     Preview ↗
                 </a>
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                <Card className="border-0 shadow-sm bg-gradient-to-br from-orange-50 to-amber-50">
+            <div className=" grid grid-cols-1 md:grid-cols-3 gap-3">
+
+                <Card className="border-0 shadow-sm bg-gradient-to-br from-blue-50 to-indigo-50">
                     <CardContent className="p-4">
                         <div className="flex items-center gap-2 mb-1">
+                            <Wallet size={14} className="text-blue-500" />
+                            <span className="text-xs text-zinc-500 font-medium"> Main Account Balance</span>
+                        </div>
+                        <p className="text-sm font-bold text-zinc-900 pl-3">{formatCurrency(walletBalance)}</p>
+                    </CardContent>
+                </Card>
+
+                
+
+                <Card className="border-0 shadow-sm bg-gradient-to-br from-orange-50 to-amber-50 ">
+                    <CardContent className="p-4">
+                        <div className="flex items-center   gap-2 mb-1">
                             <ShoppingBag size={14} className="text-orange-500" />
                             <span className="text-xs text-zinc-500 font-medium">Total Orders</span>
                         </div>
-                        <p className="text-2xl font-bold text-zinc-900">{totalSales}</p>
+                        <p className="text-sm font-bold text-zinc-900 pl-3">{totalSales}</p>
                     </CardContent>
                 </Card>
-                <Card className="border-0 shadow-sm bg-gradient-to-br from-green-50 to-emerald-50">
-                    <CardContent className="p-4">
-                        <div className="flex items-center gap-2 mb-1">
-                            <TrendingUp size={14} className="text-green-500" />
-                            <span className="text-xs text-zinc-500 font-medium">Revenue</span>
-                        </div>
-                        <p className="text-2xl font-bold text-zinc-900">{formatCurrency(revenue)}</p>
-                    </CardContent>
-                </Card>
-                <Card className="border-0 shadow-sm bg-gradient-to-br from-blue-50 to-indigo-50 col-span-2 sm:col-span-1">
+
+
+
+                <Card className="border-0   shadow-sm bg-gradient-to-br from-green-50 to-emerald-50 col-span-2 sm:col-span-1">
                     <CardContent className="p-4 flex flex-col justify-between h-full">
                         <div>
-                            <div className="flex items-center justify-between mb-1">
-                                <div className="flex items-center gap-2">
-                                    <Wallet size={14} className="text-blue-500" />
-                                    <span className="text-xs text-zinc-500 font-medium">Balance</span>
-                                </div>
+                            <div className="flex items-center gap-2 mb-1">
+                                <TrendingUp size={14} className="text-green-500" />
+                                <span className="text-xs text-zinc-500 font-medium">Revenue (GHS- Profit)</span>
                             </div>
-                            <p className="text-2xl font-bold text-zinc-900">{formatCurrency(walletBalance)}</p>
+                            <p className="text-2xl font-bold text-zinc-900 pl-3">{formatCurrency(revenue)}</p>
                         </div>
                         <button onClick={() => setShowWithdraw(true)}
-                            className="mt-3 flex items-center justify-center gap-1.5 w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-1.5 rounded-lg transition-colors shadow-sm">
+                            className="mt-3 flex items-center justify-center gap-1.5 w-full bg-green-600 hover:bg-green-700 text-white text-xs font-bold py-1.5 rounded-lg transition-colors shadow-sm text-center">
                             <DownloadCloud size={12} />
                             Withdraw
                         </button>
                     </CardContent>
                 </Card>
+
             </div>
 
             {/* Withdraw Modal */}
             {showWithdraw && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
                     <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                        <div className="px-5 py-4 border-b border-zinc-100 flex items-center justify-between bg-blue-50/50">
+                        <div className="px-4 py-4 border-b border-zinc-100 flex items-center justify-between bg-blue-50/50">
                             <h3 className="font-bold text-zinc-900 flex items-center gap-2">
                                 <DownloadCloud size={16} className="text-blue-600" />
                                 Withdraw Funds
@@ -398,10 +415,10 @@ export default function StoreManagementPage() {
                         </div>
                         <form onSubmit={handleWithdraw} className="p-5 space-y-4">
                             <div>
-                                <label className="block text-xs font-semibold text-zinc-600 mb-1.5">Amount (Max: {formatCurrency(walletBalance)})</label>
+                                <label className="block text-xs font-semibold text-zinc-600 mb-1.5">Amount (Max: {formatCurrency(revenue)})</label>
                                 <div className="relative">
                                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-zinc-400">GH₵</span>
-                                    <input type="number" step="0.01" min="0.01" max={walletBalance}
+                                    <input type="number" step="0.01" min="0.01" max={revenue}
                                         value={withdrawAmt} onChange={(e) => setWithdrawAmt(e.target.value)} required
                                         className="w-full pl-10 pr-3 py-2 border border-zinc-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500" />
                                 </div>
@@ -425,7 +442,7 @@ export default function StoreManagementPage() {
                                     className="w-full px-3 py-2 border border-zinc-200 rounded-xl text-sm placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
                             </div>
 
-                            <button type="submit" disabled={withdrawing || walletBalance <= 0}
+                            <button type="submit" disabled={withdrawing || revenue <= 0}
                                 className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl transition-all shadow-md disabled:opacity-50">
                                 {withdrawing ? <Loader2 size={16} className="animate-spin" /> : 'Confirm Withdrawal'}
                             </button>
@@ -474,6 +491,21 @@ export default function StoreManagementPage() {
                     </button>
                 </div>
 
+                <div className="flex flex-wrap items-center gap-2 mb-5 bg-zinc-50 p-1.5 rounded-xl border border-zinc-100">
+                    {(['all', 'MTN', 'Telecel', 'AirtelTigo'] as const).map(net => (
+                        <button
+                            key={net}
+                            onClick={() => setNetworkFilter(net)}
+                            className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${networkFilter === net
+                                ? 'bg-white text-orange-600 shadow-sm border border-orange-200/50'
+                                : 'text-zinc-500 hover:text-zinc-700 hover:bg-zinc-100'
+                                }`}
+                        >
+                            {net === 'all' ? 'All Networks' : net}
+                        </button>
+                    ))}
+                </div>
+
                 {/* ── PICKER PANEL ── */}
                 {showAddPanel && (
                     <Card className="mb-5 border border-orange-200 shadow-sm overflow-hidden">
@@ -490,78 +522,80 @@ export default function StoreManagementPage() {
                                 <p className="text-xs text-zinc-400 text-center py-8">No bundles available. Ask the admin to create some.</p>
                             ) : (
                                 <div className="divide-y divide-zinc-100">
-                                    {Object.entries(allGrouped).map(([network, bundles]) => {
-                                        const colors = NETWORK_COLORS[network] ?? { bg: 'bg-zinc-600', text: 'text-white', dot: 'bg-zinc-500', input: 'bg-zinc-500 border-zinc-300 text-white placeholder-zinc-300', ring: '' };
-                                        return (
-                                            <div key={network} className="p-4">
-                                                {/* Network header */}
-                                                <div className="flex items-center gap-2 mb-3">
-                                                    <span className={`w-5 h-5 rounded-md ${colors.bg} ${colors.text} flex items-center justify-center text-[10px] font-black`}>
-                                                        {network[0]}
-                                                    </span>
-                                                    <span className="text-sm font-bold text-zinc-700">{network}</span>
-                                                </div>
+                                    {Object.entries(allGrouped)
+                                        .sort(([a], [b]) => { const o: any = { MTN: 1, Telecel: 2, AirtelTigo: 3 }; return (o[a] || 9) - (o[b] || 9); })
+                                        .map(([network, bundles]) => {
+                                            const colors = NETWORK_COLORS[network] ?? { bg: 'bg-zinc-600', text: 'text-white', dot: 'bg-zinc-500', input: 'bg-zinc-500 border-zinc-300 text-white placeholder-zinc-300', ring: '' };
+                                            return (
+                                                <div key={network} className="p-4">
+                                                    {/* Network header */}
+                                                    <div className="flex items-center gap-2 mb-3">
+                                                        <span className={`w-5 h-5 rounded-md ${colors.bg} ${colors.text} flex items-center justify-center text-[10px] font-black`}>
+                                                            {network[0]}
+                                                        </span>
+                                                        <span className="text-sm font-bold text-zinc-700">{network}</span>
+                                                    </div>
 
-                                                <div className="space-y-2">
-                                                    {bundles.map(bundle => {
-                                                        const added = addedBundleIds.has(bundle._id);
-                                                        const isAdding = adding === bundle._id;
-                                                        const priceVal = pickPrices[bundle._id] ?? '';
+                                                    <div className="space-y-2">
+                                                        {bundles.map(bundle => {
+                                                            const added = addedBundleIds.has(bundle._id);
+                                                            const isAdding = adding === bundle._id;
+                                                            const priceVal = pickPrices[bundle._id] ?? '';
 
-                                                        return (
-                                                            <div key={bundle._id}
-                                                                className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${added ? 'bg-green-50 border-green-200' : 'bg-white border-zinc-200 hover:border-orange-300'}`}>
+                                                            return (
+                                                                <div key={bundle._id}
+                                                                    className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${added ? 'bg-green-50 border-green-200' : 'bg-white border-zinc-200 hover:border-orange-300'}`}>
 
-                                                                {/* Network dot + info */}
-                                                                <div className={`w-8 h-8 rounded-lg ${colors.bg} ${colors.text} flex items-center justify-center shrink-0`}>
-                                                                    <Wifi size={14} />
-                                                                </div>
-                                                                <div className="flex-1 min-w-0">
-                                                                    <p className="font-semibold text-sm text-zinc-900 leading-tight truncate">{bundle.name}</p>
-                                                                    <p className="text-xs text-zinc-400">Base: {formatCurrency(bundle.price)}</p>
-                                                                </div>
-
-                                                                {added ? (
-                                                                    /* Already in store */
-                                                                    <span className="flex items-center gap-1 text-xs font-bold text-green-600 bg-green-100 px-2.5 py-1 rounded-full shrink-0">
-                                                                        <Check size={11} /> Added
-                                                                    </span>
-                                                                ) : (
-                                                                    /* Price input + Add button */
-                                                                    <div className="flex flex-col items-end gap-1 shrink-0">
-                                                                        <div className="text-[10px] font-bold text-zinc-500 mr-1">
-                                                                            Final: {formatCurrency(bundle.price + (parseFloat(priceVal) || 0))}
-                                                                        </div>
-                                                                        <div className="flex items-center gap-2">
-                                                                            <div className="flex items-center gap-1 bg-zinc-50 border border-zinc-200 rounded-lg px-2 py-1">
-                                                                                <span className="text-[10px] text-zinc-400 font-medium">+ GH₵</span>
-                                                                                <input
-                                                                                    type="number"
-                                                                                    min="0"
-                                                                                    step="0.01"
-                                                                                    placeholder="Profit"
-                                                                                    value={priceVal}
-                                                                                    onChange={e => setPickPrices(prev => ({ ...prev, [bundle._id]: e.target.value }))}
-                                                                                    className="w-16 text-xs font-semibold text-zinc-900 bg-transparent focus:outline-none placeholder-zinc-300"
-                                                                                />
-                                                                            </div>
-                                                                            <button
-                                                                                onClick={() => addBundle(bundle)}
-                                                                                disabled={isAdding}
-                                                                                className="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold px-2.5 py-1.5 rounded-lg transition-colors disabled:opacity-50">
-                                                                                {isAdding ? <Loader2 size={11} className="animate-spin" /> : <Plus size={11} />}
-                                                                                Add
-                                                                            </button>
-                                                                        </div>
+                                                                    {/* Network dot + info */}
+                                                                    <div className={`w-8 h-8 rounded-lg ${colors.bg} ${colors.text} flex items-center justify-center shrink-0`}>
+                                                                        <Wifi size={14} />
                                                                     </div>
-                                                                )}
-                                                            </div>
-                                                        );
-                                                    })}
+                                                                    <div className="flex-1 min-w-0">
+                                                                        <p className="font-semibold text-sm text-zinc-900 leading-tight truncate">{bundle.name}</p>
+                                                                        <p className="text-xs text-zinc-400">Base: {formatCurrency(bundle.price)}</p>
+                                                                    </div>
+
+                                                                    {added ? (
+                                                                        /* Already in store */
+                                                                        <span className="flex items-center gap-1 text-xs font-bold text-green-600 bg-green-100 px-2.5 py-1 rounded-full shrink-0">
+                                                                            <Check size={11} /> Added
+                                                                        </span>
+                                                                    ) : (
+                                                                        /* Price input + Add button */
+                                                                        <div className="flex flex-col items-end gap-1 shrink-0">
+                                                                            <div className="text-[10px] font-bold text-zinc-500 mr-1">
+                                                                                Final: {formatCurrency(bundle.price + (parseFloat(priceVal) || 0))}
+                                                                            </div>
+                                                                            <div className="flex items-center gap-2">
+                                                                                <div className="flex items-center gap-1 bg-zinc-50 border border-zinc-200 rounded-lg px-2 py-1">
+                                                                                    <span className="text-[10px] text-zinc-400 font-medium">+ GH₵</span>
+                                                                                    <input
+                                                                                        type="number"
+                                                                                        min="0"
+                                                                                        step="0.01"
+                                                                                        placeholder="Profit"
+                                                                                        value={priceVal}
+                                                                                        onChange={e => setPickPrices(prev => ({ ...prev, [bundle._id]: e.target.value }))}
+                                                                                        className="w-16 text-xs font-semibold text-zinc-900 bg-transparent focus:outline-none placeholder-zinc-300"
+                                                                                    />
+                                                                                </div>
+                                                                                <button
+                                                                                    onClick={() => addBundle(bundle)}
+                                                                                    disabled={isAdding}
+                                                                                    className="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold px-2.5 py-1.5 rounded-lg transition-colors disabled:opacity-50">
+                                                                                    {isAdding ? <Loader2 size={11} className="animate-spin" /> : <Plus size={11} />}
+                                                                                    Add
+                                                                                </button>
+                                                                            </div>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        );
-                                    })}
+                                            );
+                                        })}
                                 </div>
                             )}
                         </CardContent>
@@ -583,106 +617,108 @@ export default function StoreManagementPage() {
                     </Card>
                 ) : (
                     <div className="space-y-6">
-                        {Object.entries(grouped).map(([network, bundles]) => {
-                            const colors = NETWORK_COLORS[network] ?? { bg: 'bg-zinc-700', text: 'text-white', input: 'bg-zinc-600 border-zinc-400 text-white placeholder-zinc-300', ring: '', dot: 'bg-zinc-600' };
-                            return (
-                                <div key={network}>
-                                    {/* Network label */}
-                                    <div className="flex items-center gap-2 mb-3">
-                                        <div className={`w-7 h-7 rounded-lg ${colors.bg} ${colors.text} flex items-center justify-center font-bold text-xs`}>
-                                            {network[0]}
+                        {Object.entries(grouped)
+                            .sort(([a], [b]) => { const o: any = { MTN: 1, Telecel: 2, AirtelTigo: 3 }; return (o[a] || 9) - (o[b] || 9); })
+                            .map(([network, bundles]) => {
+                                const colors = NETWORK_COLORS[network] ?? { bg: 'bg-zinc-700', text: 'text-white', input: 'bg-zinc-600 border-zinc-400 text-white placeholder-zinc-300', ring: '', dot: 'bg-zinc-600' };
+                                return (
+                                    <div key={network}>
+                                        {/* Network label */}
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <div className={`w-7 h-7 rounded-lg ${colors.bg} ${colors.text} flex items-center justify-center font-bold text-xs`}>
+                                                {network[0]}
+                                            </div>
+                                            <h3 className="font-semibold text-zinc-700 text-sm">{network}</h3>
+                                            <span className="text-xs text-zinc-400">({bundles.length})</span>
                                         </div>
-                                        <h3 className="font-semibold text-zinc-700 text-sm">{network}</h3>
-                                        <span className="text-xs text-zinc-400">({bundles.length})</span>
-                                    </div>
 
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                        {bundles.map(sb => {
-                                            const displayPrice = sb.customPrice ?? sb.bundle?.price;
-                                            const hasCustom = sb.customPrice !== undefined && sb.customPrice !== null;
-                                            const isEditing = editingPrice === sb._id;
-                                            const isSaving = savingPrice === sb._id;
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                            {bundles.map(sb => {
+                                                const displayPrice = sb.customPrice ?? sb.bundle?.price;
+                                                const hasCustom = sb.customPrice !== undefined && sb.customPrice !== null;
+                                                const isEditing = editingPrice === sb._id;
+                                                const isSaving = savingPrice === sb._id;
 
-                                            return (
-                                                <div key={sb._id}
-                                                    className={`relative rounded-2xl p-4 ${colors.bg} ${colors.text} shadow-sm group flex flex-col gap-1.5`}>
+                                                return (
+                                                    <div key={sb._id}
+                                                        className={`relative rounded-2xl p-4 ${colors.bg} ${colors.text} shadow-sm group flex flex-col gap-1.5`}>
 
-                                                    {/* Delete button */}
-                                                    <button
-                                                        onClick={() => removeBundle(sb._id)}
-                                                        disabled={removing === sb._id || isEditing}
-                                                        className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/20 opacity-0 group-hover:opacity-100 flex items-center justify-center hover:bg-black/40 transition-all z-10">
-                                                        {removing === sb._id
-                                                            ? <Loader2 size={10} className="animate-spin text-white" />
-                                                            : <Trash2 size={10} className="text-white" />}
-                                                    </button>
-
-                                                    <Wifi size={16} className="opacity-70" />
-                                                    <p className="font-extrabold text-base leading-tight">{sb.bundle?.name}</p>
-
-                                                    {/* ── Price display / edit ── */}
-                                                    {isEditing ? (
-                                                        <div className="mt-1 space-y-1.5">
-                                                            <div className="flex items-center gap-1">
-                                                                <span className="text-xs font-bold opacity-70">GH₵</span>
-                                                                <input
-                                                                    type="number" min="0.01" step="0.01"
-                                                                    value={priceInput}
-                                                                    onChange={e => setPriceInput(e.target.value)}
-                                                                    onKeyDown={e => {
-                                                                        if (e.key === 'Enter') savePrice(sb._id);
-                                                                        if (e.key === 'Escape') cancelEditPrice();
-                                                                    }}
-                                                                    autoFocus
-                                                                    className={`w-full rounded-lg px-2 py-1 text-sm font-bold border focus:outline-none focus:ring-2 focus:ring-white/50 ${colors.input}`}
-                                                                />
-                                                            </div>
-                                                            <div className="flex items-center gap-1">
-                                                                <button onClick={() => savePrice(sb._id)} disabled={isSaving}
-                                                                    className="flex-1 flex items-center justify-center gap-1 bg-white/25 hover:bg-white/40 rounded-lg py-1 text-xs font-bold transition-colors">
-                                                                    {isSaving ? <Loader2 size={10} className="animate-spin" /> : <><Check size={10} /> Save</>}
-                                                                </button>
-                                                                <button onClick={cancelEditPrice}
-                                                                    className="w-7 h-7 flex items-center justify-center bg-black/20 hover:bg-black/30 rounded-lg transition-colors">
-                                                                    <X size={11} />
-                                                                </button>
-                                                            </div>
-                                                            {hasCustom && (
-                                                                <button onClick={() => resetPrice(sb._id)} disabled={isSaving}
-                                                                    className="w-full text-[10px] opacity-70 hover:opacity-100 underline underline-offset-2 text-left transition-opacity">
-                                                                    Reset to base ({formatCurrency(sb.bundle?.price)})
-                                                                </button>
-                                                            )}
-                                                        </div>
-                                                    ) : (
-                                                        <button onClick={() => startEditPrice(sb)}
-                                                            className="flex items-center gap-1.5 mt-0.5 group/price w-fit"
-                                                            title="Click to set your price">
-                                                            <span className="font-bold text-sm opacity-95">
-                                                                {formatCurrency(displayPrice)}
-                                                            </span>
-                                                            {hasCustom && (
-                                                                <span className="text-[9px] bg-white/30 px-1.5 py-0.5 rounded-full font-bold tracking-wide">
-                                                                    custom
-                                                                </span>
-                                                            )}
-                                                            <Pencil size={10} className="opacity-0 group-hover/price:opacity-70 transition-opacity" />
+                                                        {/* Delete button */}
+                                                        <button
+                                                            onClick={() => removeBundle(sb._id)}
+                                                            disabled={removing === sb._id || isEditing}
+                                                            className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/20 opacity-0 group-hover:opacity-100 flex items-center justify-center hover:bg-black/40 transition-all z-10">
+                                                            {removing === sb._id
+                                                                ? <Loader2 size={10} className="animate-spin text-white" />
+                                                                : <Trash2 size={10} className="text-white" />}
                                                         </button>
-                                                    )}
 
-                                                    {/* Strikethrough base price when custom */}
-                                                    {hasCustom && !isEditing && (
-                                                        <p className="text-[10px] opacity-50 line-through leading-none">
-                                                            {formatCurrency(sb.bundle?.price)}
-                                                        </p>
-                                                    )}
-                                                </div>
-                                            );
-                                        })}
+                                                        <Wifi size={16} className="opacity-70" />
+                                                        <p className="font-extrabold text-base leading-tight">{sb.bundle?.name}</p>
+
+                                                        {/* ── Price display / edit ── */}
+                                                        {isEditing ? (
+                                                            <div className="mt-1 space-y-1.5">
+                                                                <div className="flex items-center gap-1">
+                                                                    <span className="text-xs font-bold opacity-70">GH₵</span>
+                                                                    <input
+                                                                        type="number" min="0.01" step="0.01"
+                                                                        value={priceInput}
+                                                                        onChange={e => setPriceInput(e.target.value)}
+                                                                        onKeyDown={e => {
+                                                                            if (e.key === 'Enter') savePrice(sb._id);
+                                                                            if (e.key === 'Escape') cancelEditPrice();
+                                                                        }}
+                                                                        autoFocus
+                                                                        className={`w-full rounded-lg px-2 py-1 text-sm font-bold border focus:outline-none focus:ring-2 focus:ring-white/50 ${colors.input}`}
+                                                                    />
+                                                                </div>
+                                                                <div className="flex items-center gap-1">
+                                                                    <button onClick={() => savePrice(sb._id)} disabled={isSaving}
+                                                                        className="flex-1 flex items-center justify-center gap-1 bg-white/25 hover:bg-white/40 rounded-lg py-1 text-xs font-bold transition-colors">
+                                                                        {isSaving ? <Loader2 size={10} className="animate-spin" /> : <><Check size={10} /> Save</>}
+                                                                    </button>
+                                                                    <button onClick={cancelEditPrice}
+                                                                        className="w-7 h-7 flex items-center justify-center bg-black/20 hover:bg-black/30 rounded-lg transition-colors">
+                                                                        <X size={11} />
+                                                                    </button>
+                                                                </div>
+                                                                {hasCustom && (
+                                                                    <button onClick={() => resetPrice(sb._id)} disabled={isSaving}
+                                                                        className="w-full text-[10px] opacity-70 hover:opacity-100 underline underline-offset-2 text-left transition-opacity">
+                                                                        Reset to base ({formatCurrency(sb.bundle?.price)})
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                        ) : (
+                                                            <button onClick={() => startEditPrice(sb)}
+                                                                className="flex items-center gap-1.5 mt-0.5 group/price w-fit"
+                                                                title="Click to set your price">
+                                                                <span className="font-bold text-sm opacity-95">
+                                                                    {formatCurrency(displayPrice)}
+                                                                </span>
+                                                                {hasCustom && (
+                                                                    <span className="text-[9px] bg-white/30 px-1.5 py-0.5 rounded-full font-bold tracking-wide">
+                                                                        custom
+                                                                    </span>
+                                                                )}
+                                                                <Pencil size={10} className="opacity-0 group-hover/price:opacity-70 transition-opacity" />
+                                                            </button>
+                                                        )}
+
+                                                        {/* Strikethrough base price when custom */}
+                                                        {hasCustom && !isEditing && (
+                                                            <p className="text-[10px] opacity-50 line-through leading-none">
+                                                                {formatCurrency(sb.bundle?.price)}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
                                     </div>
-                                </div>
-                            );
-                        })}
+                                );
+                            })}
                     </div>
                 )}
             </div>

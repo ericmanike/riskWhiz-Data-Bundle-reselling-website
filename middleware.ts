@@ -18,14 +18,14 @@ export default withAuth(
         // the request explicitly asked to protect "dashboard from admin".
         // I'll include /dashboard, /buy, and /history as user-centric routes.
 
-       if ((pathname.startsWith("/dashboard") || pathname.startsWith("/buy") || pathname.startsWith("/history")) && role === "admin") {
-            return NextResponse.redirect(new URL("/admin", req.url));
-        }   
+        /* if ((pathname.startsWith("/dashboard") || pathname.startsWith("/buy") || pathname.startsWith("/history")) && role === "admin") {
+              return NextResponse.redirect(new URL("/admin", req.url));
+          }   */
 
 
 
-     
-        
+
+
         return NextResponse.next();
     },
     {

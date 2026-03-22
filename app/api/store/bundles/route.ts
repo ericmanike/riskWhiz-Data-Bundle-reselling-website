@@ -4,12 +4,13 @@ import { authOptions } from "@/lib/auth";
 import dbConnect from "@/lib/mongoose";
 import StoreBundle from "@/models/StoreBundle";
 import Bundle from "@/models/Bundle";
+import Stores from "@/models/Stores";
 
 // GET /api/store/bundles — returns the logged-in agent's store bundles (populated)
 export async function GET() {
     try {
         const session = await getServerSession(authOptions);
-        if (!session || session.user.role !== "agent") {
+        if (!session || (session.user.role !== "agent" && session.user.role !== "admin")) {
             return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
         }
 
@@ -29,7 +30,7 @@ export async function GET() {
 export async function POST(req: Request) {
     try {
         const session = await getServerSession(authOptions);
-        if (!session || session.user.role !== "agent") {
+        if (!session || (session.user.role !== "agent" && session.user.role !== "admin")) {
             return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
         }
 
@@ -41,6 +42,12 @@ export async function POST(req: Request) {
         }
 
         await dbConnect();
+
+        // Verify the store exists and is active for this agent
+        const store = await Stores.findOne({ agent: session.user.id });
+        if (!store) {
+            return NextResponse.json({ message: "Store not found. Please create a store first." }, { status: 404 });
+        }
 
         // Verify the bundle exists and is meant for agents
         const bundle = await Bundle.findById(bundleId);

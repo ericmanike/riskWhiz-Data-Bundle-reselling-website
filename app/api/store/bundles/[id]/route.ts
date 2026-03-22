@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import dbConnect from "@/lib/mongoose";
 import StoreBundle from "@/models/StoreBundle";
+import Stores from "@/models/Stores";
 
 // PATCH /api/store/bundles/[id] — update custom price for a store bundle
 export async function PATCH(
@@ -11,7 +12,7 @@ export async function PATCH(
 ) {
     try {
         const session = await getServerSession(authOptions);
-        if (!session || session.user.role !== "agent") {
+        if (!session || (session.user.role !== "agent" && session.user.role !== "admin")) {
             return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
         }
 
@@ -30,6 +31,12 @@ export async function PATCH(
         }
 
         await dbConnect();
+
+        // Check if store exists
+        const store = await Stores.findOne({ agent: session.user.id });
+        if (!store) {
+            return NextResponse.json({ message: "Store not found" }, { status: 404 });
+        }
 
         const updated = await StoreBundle.findOneAndUpdate(
             { _id: id, agent: session.user.id },
@@ -54,7 +61,7 @@ export async function DELETE(
 ) {
     try {
         const session = await getServerSession(authOptions);
-        if (!session || session.user.role !== "agent") {
+        if (!session || (session.user.role !== "agent" && session.user.role !== "admin")) {
             return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
         }
 

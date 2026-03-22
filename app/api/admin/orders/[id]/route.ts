@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import dbConnect from '@/lib/mongoose';
 import Order from '@/models/Order';
+import User from '@/models/User';
+import Stores from '@/models/Stores';
 
 
 
@@ -55,6 +57,12 @@ export async function PATCH(
 
         await dbConnect();
 
+        // Fetch old order to check status change
+        const oldOrder = await Order.findById(id);
+        if (!oldOrder) {
+            return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+        }
+
         const order = await Order.findByIdAndUpdate(
             id,
             { status },
@@ -63,6 +71,30 @@ export async function PATCH(
 
         if (!order) {
             return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+        }
+
+        // Check for transition to 'delivered' for store-attributed orders
+        const isNowDelivered = (status.toLowerCase() === 'delivered');
+        const wasAlreadyDelivered = (oldOrder.status.toLowerCase() === 'delivered');
+
+        if (isNowDelivered && !wasAlreadyDelivered && order.agent) {
+            try {
+                const profit = Math.max(0, (order.price || 0) - (order.originalPrice || order.price));
+                
+                await Promise.all([
+                    // Credit the agent's wallet
+                    User.findByIdAndUpdate(order.agent, { $inc: { walletBalance: profit } }),
+                    // Update store stats
+                    Stores.findOneAndUpdate(
+                        { agent: order.agent }, 
+                        { $inc: { totalProfit: profit, totalSales: 1 } },
+                        { upsert: true }
+                    )
+                ]);
+                console.log(`💰 Credited agent ${order.agent} with profit: ${profit}`);
+            } catch (err) {
+                console.error("Failed to credit agent profit:", err);
+            }
         }
 
         return NextResponse.json({ message: 'Order updated successfully', order });

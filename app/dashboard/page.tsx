@@ -33,7 +33,7 @@ export default async function DashboardPage() {
 
     const balance = await User.findById(session.user.id).select("walletBalance storeName");
     const storeBundleCount = await StoreBundle.countDocuments({ agent: session.user.id });
-    const hasStore = (balance?.storeName && balance.storeName.trim() !== '') || storeBundleCount > 0;
+    const hasStore = balance?.storeName == null
 
     return (
         <div className="p-4 space-y-6 max-w-4xl mx-auto md:pt-28 pt-24 z-0">
@@ -42,7 +42,7 @@ export default async function DashboardPage() {
                     <h1 className="text-2xl font-bold text-zinc-900">Hello, {session?.user?.name?.split(" ")[0]} 👋</h1>
                     <p className="text-zinc-500">Welcome back</p>
                 </div>
-                {session?.user?.role !== 'admin' && (
+                {session?.user?.role && (
 
                     <div className=" flex items-center gap-5">
                         <strong>Balance {formatCurrency(balance?.walletBalance || 0)}</strong>
@@ -108,7 +108,7 @@ export default async function DashboardPage() {
 
                 </div>
                 <div className='mt-5 space-y-3'>
-                    {session?.user?.role !== 'agent' && <BecomeAgent />}
+                    <BecomeAgent />
                     <CreateStore hasStore={hasStore} />
                 </div>
 

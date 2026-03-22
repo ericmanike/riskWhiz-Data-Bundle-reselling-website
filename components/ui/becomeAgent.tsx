@@ -1,6 +1,5 @@
 'use client'
 import React from 'react'
-import { DollarSign, User } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { useEffect } from 'react'
 import { formatCurrency } from '@/lib/utils'

@@ -1,14 +1,14 @@
-import { NextResponse } from "next/server";
+import { NextResponse , NextRequest} from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import dbConnect from "@/lib/mongoose";
 import Order from "@/models/Order";
 import User from "@/models/User";
-
 import Bundle from "@/models/Bundle";
+import StoreBundle from "@/models/StoreBundle";
+import Stores from "@/models/Stores";
 
-
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
     try {
         const session = await getServerSession(authOptions);
         if (!session) {
@@ -72,36 +72,7 @@ export async function POST(req: Request) {
 
         console.log('Network ID:', networkId);
 
-        // Generate unique reference
-        const reference = `wallet_${Date.now()}_${session.user.id}`;
-
-        // Check for duplicate transaction  
-        const existingOrder = await Order.findOne({ transaction_id: reference });
-        if (existingOrder) {
-            return NextResponse.json({ message: "Duplicate transaction reference" }, { status: 409 });
-        }
-
-
-        // Deduct from wallet balance
-
-         const updatedUser = await User.findOneAndUpdate(
-            { _id: session.user.id, walletBalance: { $gte: realPrice } },
-            { $inc: { walletBalance: -realPrice } },
-            { new: true }
-            );
-
-        if (!updatedUser) {
-        console.log('Insufficient balance during update. Refunding wallet.');
-        return NextResponse.json({ message: "Insufficient wallet balance. Transaction cancelled." }, { status: 400 });
-        }
-
-
-
-
-
       
-        console.log(`Deducted ${price} from wallet. New balance: ${updatedUser.walletBalance}`);
-
         // Place order with Dakazi
         const placeOrder = await fetch(
             "https://reseller.dakazinabusinessconsult.com/api/v1/buy-data-package",
@@ -115,7 +86,7 @@ export async function POST(req: Request) {
                     recipient_msisdn: phoneNumber.trim(),
                     network_id: networkId,
                     shared_bundle: Number(bundleName),
-                    incoming_api_ref: reference
+                    incoming_api_ref: "store"+Date.now()
                 })
             }
 
@@ -144,17 +115,11 @@ try {
    
         // user.walletBalance = Number(user.walletBalance) - Number(price);
 
-    if (orderRes.success !== true) {
-        await User.findByIdAndUpdate(session.user.id, {
-            $inc: { walletBalance: realPrice }
-        });
-        
-       return NextResponse.json({ message: "Order failed. Wallet refunded." }, { status: 500 });
-}
+ 
         // Create order record
         const order = await Order.create({
             user: session.user.id,
-            transaction_id: orderRes.transaction_code,
+            transaction_id: "store"+orderRes.transaction_code,
             network: network,
             bundleName: bundleName,
             price: realPrice,
@@ -162,15 +127,15 @@ try {
             status: 'pending',
         });
 
-        console.log('📦 New wallet order created:', order);
+        console.log('📦 New store order created:', order);
         return NextResponse.json({
             message: "Order created successfully",
             order,
-            newBalance: updatedUser.walletBalance
-        }, { status: 201 });
+        
+        }, { status: 201 });    
 
     } catch (error) {
-        console.error("Wallet purchase error:", error);
-        return NextResponse.json({ message: "Error processing wallet purchase" }, { status: 500 });
+        console.error("Store purchase error:", error);
+        return NextResponse.json({ message: "Error processing store purchase" }, { status: 500 });
     }
 }

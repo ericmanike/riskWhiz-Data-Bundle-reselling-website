@@ -4,11 +4,12 @@ import { authOptions } from "@/lib/auth";
 import dbConnect from "@/lib/mongoose";
 import Withdrawal from "@/models/Withdrawal";
 import User from "@/models/User";
+import Stores from "@/models/Stores";
 
 export async function POST(req: Request) {
     try {
         const session = await getServerSession(authOptions);
-        if (!session || session.user.role !== "agent") {
+        if (!session || (session.user.role !== "agent" && session.user.role !== "admin")) {
             return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
         }
 
@@ -21,19 +22,27 @@ export async function POST(req: Request) {
 
         await dbConnect();
 
-        // Ensure the agent has sufficient wallet balance
-        const user = await User.findById(session.user.id);
+        // Ensure the agent has a store and sufficient balance
+        const [user, store] = await Promise.all([
+            User.findById(session.user.id),
+            Stores.findOne({ agent: session.user.id })
+        ]);
+
         if (!user) {
             return NextResponse.json({ message: "User not found" }, { status: 404 });
         }
 
-        if (user.walletBalance < amount) {
-            return NextResponse.json({ message: "Insufficient balance for withdrawal" }, { status: 400 });
+        if (!store) {
+            return NextResponse.json({ message: "Store not found. Please create a store first." }, { status: 404 });
         }
 
-        // Deduct from wallet balance
-        user.walletBalance -= amount;
-        await user.save();
+        if (store.totalProfit < amount) {
+            return NextResponse.json({ message: "Insufficient profit balance for withdrawal" }, { status: 400 });
+        }
+
+        // Deduct from store profit
+        store.totalProfit -= amount;
+        await store.save();
 
         // Create the withdrawal record
         const withdrawal = await Withdrawal.create({

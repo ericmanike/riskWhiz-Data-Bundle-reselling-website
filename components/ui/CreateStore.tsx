@@ -6,8 +6,9 @@ import Link from 'next/link'
 
 function CreateStore({ hasStore }: { hasStore?: boolean }) {
     const { data: session } = useSession()
+    if (session?.user?.role == 'user') return null
 
-    if (session?.user?.role !== 'agent') return null
+
 
     return (
         <Link href="/store" className="block w-full">

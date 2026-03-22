@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 
 export interface IOrder extends Document {
-    user: mongoose.Types.ObjectId;
+    user?: mongoose.Types.ObjectId;
     transaction_id: string;
     bundleName: string;
     network: string;
@@ -10,12 +10,15 @@ export interface IOrder extends Document {
 
     status: 'pending' | 'delivered' | 'failed' | 'reversed';
     transactionId?: string; // External or generated ID
+    agent?: mongoose.Types.ObjectId;
+    storeBundle?: mongoose.Types.ObjectId;
+    originalPrice?: number;
     createdAt: Date;
     updatedAt: Date;
 }
 const OrderSchema = new Schema<IOrder>(
     {
-        user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+        user: { type: Schema.Types.ObjectId, ref: 'User' },
         transaction_id: { type: String, required: true, unique: true },
         bundleName: { type: String, required: true },
         network: { type: String, required: true },
@@ -26,6 +29,9 @@ const OrderSchema = new Schema<IOrder>(
             enum: ['pending', 'delivered', 'failed', 'reversed'],
             default: 'pending'
         },
+        agent: { type: Schema.Types.ObjectId, ref: 'User' },
+        storeBundle: { type: Schema.Types.ObjectId, ref: 'StoreBundle' },
+        originalPrice: { type: Number },
         transactionId: { type: String },
     },
     { timestamps: true }
