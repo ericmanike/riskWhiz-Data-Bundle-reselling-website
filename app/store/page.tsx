@@ -5,7 +5,8 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import {
     Store, Share2, ShoppingBag, TrendingUp, Link2, Plus, Trash2,
-    Pencil, Check, X, Loader2, Wifi, ChevronDown, ChevronRight, DownloadCloud, Wallet
+    Pencil, Check, X, Loader2, Wifi, ChevronDown, ChevronRight, DownloadCloud, Wallet,
+    Clock, CheckCircle, XCircle, RotateCcw
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { formatCurrency } from '@/lib/utils';
@@ -25,6 +26,48 @@ type StoreBundle = {
     customPrice?: number;
     isVisible: boolean;
 };
+
+type OrderItem = {
+    _id: string;
+    bundleName: string;
+    network: string;
+    phoneNumber: string;
+    price: number;
+    status: 'pending' | 'delivered' | 'failed' | 'reversed';
+    createdAt: string;
+    transaction_id: string;
+};
+
+const STATUS_STYLES: Record<string, { label: string; color: string }> = {
+    pending: { label: 'Pending', color: 'bg-amber-100 text-amber-700 border-amber-200' },
+    delivered: { label: 'Delivered', color: 'bg-emerald-100 text-emerald-700 border-emerald-200' },
+    failed: { label: 'Failed', color: 'bg-red-100 text-red-700 border-red-200' },
+    reversed: { label: 'Reversed', color: 'bg-blue-100 text-blue-700 border-blue-200' },
+};
+
+function StatusIcon({ status }: { status: string }) {
+    switch (status) {
+        case 'pending': return <Loader2 size={12} className="animate-spin" />;
+        case 'delivered': return <CheckCircle size={12} />;
+        case 'failed': return <XCircle size={12} />;
+        case 'reversed': return <RotateCcw size={12} />;
+        default: return null;
+    }
+}
+
+function timeAgo(dateStr: string): string {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    if (seconds < 60) return 'just now';
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    if (days < 7) return `${days}d ago`;
+    return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+}
 
 const NETWORK_COLORS: Record<string, { bg: string; text: string; ring: string; input: string; dot: string }> = {
     MTN: {
@@ -87,6 +130,10 @@ export default function StoreManagementPage() {
     const [withdrawDetails, setWithdrawDetails] = useState('');
     const [withdrawing, setWithdrawing] = useState(false);
 
+    /* ── orders ── */
+    const [orders, setOrders] = useState<OrderItem[]>([]);
+    const [loadingOrders, setLoadingOrders] = useState(true);
+
     const storeLink =
         typeof window !== 'undefined'
             ? `${window.location.origin}/store/${(storeName || session?.user?.id || '').trim().replace(/\s+/g, '-').toLowerCase()}`
@@ -107,6 +154,16 @@ export default function StoreManagementPage() {
         }
     }, []);
 
+    const loadOrders = useCallback(async () => {
+        setLoadingOrders(true);
+        try {
+            const res = await fetch('/api/store/orders');
+            if (res.ok) setOrders(await res.json());
+        } finally {
+            setLoadingOrders(false);
+        }
+    }, []);
+
     useEffect(() => {
         if (!session) return;
         fetch('/api/store/stats')
@@ -121,7 +178,8 @@ export default function StoreManagementPage() {
                 }
             }).catch(() => null);
         loadStoreBundles();
-    }, [session, loadStoreBundles]);
+        loadOrders();
+    }, [session, loadStoreBundles, loadOrders]);
 
     const loadAllBundles = async () => {
         setLoadingAll(true);
@@ -719,6 +777,78 @@ export default function StoreManagementPage() {
                                     </div>
                                 );
                             })}
+                    </div>
+                )}
+            </div>
+
+            {/* ══════════════════════════════════════════
+                 ORDER HISTORY
+            ══════════════════════════════════════════ */}
+            <div>
+                <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 text-white flex items-center justify-center shadow-sm">
+                        <Clock size={20} />
+                    </div>
+                    <div>
+                        <h2 className="text-base font-bold text-zinc-900">Order History</h2>
+                        <p className="text-xs text-zinc-400">
+                            {loadingOrders ? 'Loading...' : `${orders.length} recent order${orders.length !== 1 ? 's' : ''}`}
+                        </p>
+                    </div>
+                </div>
+
+                {loadingOrders ? (
+                    <div className="flex justify-center py-10"><Loader2 className="animate-spin text-orange-400" size={24} /></div>
+                ) : orders.length === 0 ? (
+                    <Card className="border-dashed border-2 border-zinc-300">
+                        <CardContent className="text-center py-10">
+                            <div className="w-12 h-12 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <ShoppingBag size={20} className="text-orange-300" />
+                            </div>
+                            <p className="font-semibold text-zinc-500 text-sm">No orders yet</p>
+                            <p className="text-xs text-zinc-400 mt-1">Orders placed by customers will appear here.</p>
+                        </CardContent>
+                    </Card>
+                ) : (
+                    <div className="space-y-2">
+                        {orders.map((order) => {
+                            const style = STATUS_STYLES[order.status] || STATUS_STYLES.pending;
+                            const netColor = NETWORK_COLORS[order.network];
+
+                            return (
+                                <div
+                                    key={order._id}
+                                    className="flex items-center gap-3 p-3.5 rounded-xl bg-white border border-zinc-100 shadow-sm hover:shadow-md transition-shadow"
+                                >
+                                    {/* Network indicator */}
+                                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 ${
+                                        netColor ? `${netColor.bg} ${netColor.text}` : 'bg-zinc-200 text-zinc-600'
+                                    }`}>
+                                        {order.network?.[0] || '?'}
+                                    </div>
+
+                                    {/* Order details */}
+                                    <div className="flex-1 min-w-0">
+                                        <p className="font-semibold text-sm text-zinc-800 truncate">{order.bundleName} GB</p>
+                                        <p className="text-xs text-zinc-400 truncate">{order.phoneNumber}</p>
+                                    </div>
+
+                                    {/* Price & status */}
+                                    <div className="flex flex-col items-end gap-1 shrink-0">
+                                        <span className="font-bold text-sm text-zinc-800">{formatCurrency(order.price)}</span>
+                                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border ${style.color}`}>
+                                            <StatusIcon status={order.status} />
+                                            {style.label}
+                                        </span>
+                                    </div>
+
+                                    {/* Time */}
+                                    <span className="text-[10px] text-zinc-400 shrink-0 w-12 text-right">
+                                        {timeAgo(order.createdAt)}
+                                    </span>
+                                </div>
+                            );
+                        })}
                     </div>
                 )}
             </div>

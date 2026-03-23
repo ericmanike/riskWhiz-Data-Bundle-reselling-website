@@ -145,7 +145,7 @@ export default function BuyContent() {
 
                             if (verifyResponse.ok) {
                                 console.log('Payment verified');
-                                setTimeout(() => router.push('/dashboard'), 2000);
+                                router.push(`/store/${params.storename}/buy/track-order`)
                                 setMessage("Payment successful");
                             } else {
                                 console.log('Payment verification failed');
@@ -175,42 +175,7 @@ export default function BuyContent() {
         }
     };
 
-    const handleWalletPurchase = async () => {
-        if (phoneNumber.length < 10) {
-            alert("Valid Phone number is required")
-            return
-        }
-
-        setLoading(true);
-        try {
-            const response = await fetch('/api/store/purchase', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    storeBundleId: searchParams.get("storeBundleId"),
-                    network: initialNetwork,
-                    phoneNumber: phoneNumber,
-                    reference: "DATA_"+ Date.now()
-                }),
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                setMessage("Purchase successful! Redirecting...");
-                setTimeout(() => router.push('/dashboard'), 2000);
-            } else {
-                alert(data.message || "Wallet purchase failed");
-                setMessage(data.message || "Purchase failed");
-            }
-        } catch (error: any) {
-            console.error('Wallet purchase error:', error);
-            alert("Something went wrong with the wallet purchase.");
-            setMessage(error.message);
-        } finally {
-            setLoading(false);
-        }
-    };
+  
 
     return (
         <div className="p-4 md:w-[80%] w-full mx-auto min-h-screen z-0">
