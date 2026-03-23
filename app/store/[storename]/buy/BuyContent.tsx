@@ -213,7 +213,7 @@ export default function BuyContent() {
     };
 
     return (
-        <div className="p-4 w-[80%] mx-auto min-h-screen z-0">
+        <div className="p-4 md:w-[80%] w-full mx-auto min-h-screen z-0">
             <h1 className="text-2xl font-bold mb-6">Buy Data Bundle</h1>
 
      
@@ -242,7 +242,7 @@ export default function BuyContent() {
                                     value={phoneNumber}
                                     onChange={(e) => setPhoneNumber(e.target.value)}
                                     className="w-full px-4 py-3 rounded-xl border border-slate-900 bg-white text-black placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-white text-lg tracking-wide"
-                                    placeholder="024 XXX XXXX"
+                                    placeholder="024XXXXXXX"
                                     autoFocus
                                 />
                             </div>
