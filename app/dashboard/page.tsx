@@ -96,7 +96,9 @@ export default async function DashboardPage() {
 
                             <div className="grid grid-cols-1  gap-2 w-full">
                                 <Link href="/afa-registration" className="w-full">
-                                    <button className="w-full bg-yellow-500 hover:bg-yellow-600 text-brown-500 px-3 md:px-4 py-2 md:py-2.5 rounded-lg text-xs md:text-sm font-semibold transition-all">
+                                    <button className="w-full bg-yellow-500 hover:bg-yellow-600 
+                                    text-brown-500 px-3 md:px-4 py-2 md:py-2.5 
+                                    rounded-lg text-xs md:text-sm font-semibold transition-all">
                                         AFA Registration
                                     </button>
                                 </Link>

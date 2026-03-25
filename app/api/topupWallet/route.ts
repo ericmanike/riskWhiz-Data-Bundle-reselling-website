@@ -19,8 +19,9 @@ export async function POST(req:NextRequest){
             return NextResponse.json({message:"Unauthorized access"} , {status:400})
         }
 
-        user.walletBalance += amount;
-        await user.save();
+ await User.findOneAndUpdate({email} ,{$inc: {walletBalance: amount }})
+        // user.walletBalance += amount;
+        // await user.save();
   
         console.log("User wallet balance updated", user.walletBalance)
 
