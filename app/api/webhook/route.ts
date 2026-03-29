@@ -20,6 +20,15 @@ export async function POST(request: Request) {
       { transaction_id: reference },
       { status: status.toLowerCase() }
     );
+    
+    if(!order){
+      await Order.findOneAndUpdate(
+        { transaction_id: "S"+reference },
+        { status: status.toLowerCase() }
+      );
+    }
+ 
+
     console.log('order found', order)
     return NextResponse.json({ received: true });
 
