@@ -145,7 +145,7 @@ export default function BuyContent() {
 
                             if (verifyResponse.ok) {
                                 console.log('Payment verified');
-                                router.push(`/store/${params.storename}/buy/track-order`)
+                                router.push(`/store/${params.storename}/track-order`)
                                 setMessage("Payment successful");
                             } else {
                                 console.log('Payment verification failed');
