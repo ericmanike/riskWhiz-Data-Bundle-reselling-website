@@ -13,6 +13,7 @@ export interface IStores extends Document {
     totalSales: number;                  // Total volume of sales
     totalProfit: number;                 // Total profit earned by the agent
                    // Store transaction/activity logs
+    phoneNumber: string;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -22,6 +23,7 @@ export interface IStores extends Document {
 const StoresSchema = new Schema<IStores>(
     {
         storeName: { type: String, required: true, unique: true },
+        phoneNumber: { type: String, required: true, unique: true },
         agent: { type: Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
         totalSales: { type: Number, default: 0 },
         totalProfit: { type: Number, default: 0 },

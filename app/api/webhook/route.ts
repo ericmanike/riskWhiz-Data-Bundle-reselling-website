@@ -7,9 +7,11 @@ export async function POST(request: Request) {
     await dbConnect();
 
     const data = await request.json();
-
+    console.log("Data received from webhook : ", data)
     const { reference, status } = data;
-    console.log('Received webhook data:', data);
+    
+    console.log('Reference:', reference);
+    console.log('Status:', status);
 
     if (!reference || !status) {
       return NextResponse.json({ error: "Missing transaction_id or status" }, { status: 400 });
@@ -20,7 +22,7 @@ export async function POST(request: Request) {
       { transaction_id: reference },
       { status: status.toLowerCase() }
     );
-    
+  
     if(!order){
       await Order.findOneAndUpdate(
         { transaction_id: "S"+reference },
@@ -65,7 +67,21 @@ Received webhook data: {
 
 
 
-
+{
+    "id": 7988,
+    "type": "test_event",
+    "status": "DELIVERED",
+    "previous_status": "PROCESSING",
+    "order_code": "DKZ-TEST-RQ5WKR",
+    "reference": "REF-HETWWVUOTM",
+    "amount": 10,
+    "user_id": 4,
+    "occurred_at": "2026-04-10T21:15:44+00:00",
+    "test": true,
+    "metadata": {
+        "message": "This is a test webhook from Dakazina"
+    }
+}
 
 
 

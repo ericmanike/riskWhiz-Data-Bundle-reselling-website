@@ -48,7 +48,7 @@ export default async function PublicStorePage({ params }: Props) {
 
     let agent: any = await Stores.findOne({
         storeName: { $regex: new RegExp(`^${searchString.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, "i") }
-    }).select("storeName agent");
+    }).select("storeName agent"); 
 
     // Fallback: try finding by Agent ID if it qualifies as a valid ObjectId
     if (!agent && mongoose.Types.ObjectId.isValid(storename)) {
@@ -57,6 +57,7 @@ export default async function PublicStorePage({ params }: Props) {
     // if (!agent || agent.role !== "agent" && agent.role !== "admin") notFound();
 
     const storeName = agent?.storeName?.trim() || ` Agents's Store`;
+    
 
     // Fetch store bundles using the agent ID found (or the storename if it was already an ID)
     const agentId = agent?.agent || storename;
@@ -80,6 +81,7 @@ export default async function PublicStorePage({ params }: Props) {
             storeSlug={storename}
             agentId={agentId.toString()}
             storeBundles={serializedBundles}
+           phoneNumber={agent.phoneNumber}
         />
     );
 }

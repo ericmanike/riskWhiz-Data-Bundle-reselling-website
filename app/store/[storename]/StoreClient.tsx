@@ -11,6 +11,7 @@ interface StoreClientProps {
     storeSlug: string;
     agentId: string;
     storeBundles: any[];
+    phoneNumber: string;
 }
 
 const NETWORK_COLORS: Record<string, { bg: string; text: string; ring: string; badge: string }> = {
