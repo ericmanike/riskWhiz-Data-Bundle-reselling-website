@@ -2,10 +2,16 @@ import dbConnect from "@/lib/mongoose";
 import Order from "@/models/Order";
 import { NextResponse } from "next/server";
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: Request) {
+
+     const data = await request.json();
+    console.log("Data received from webhook : ", data)
+
   try {
     await dbConnect();
-
+ 
     const data = await request.json();
     console.log("Data received from webhook : ", data)
     const { reference, status } = data;
