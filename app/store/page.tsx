@@ -408,32 +408,9 @@ export default function StoreManagementPage() {
                     <div className="w-12 h-12 rounded-[10px] bg-gradient-to-br from-orange-500 to-amber-400 flex items-center justify-center shadow-lg shadow-orange-200 shrink-0">
                         <Store size={24} className="text-white" />
                     </div>
-                    <div>
-                        {editingName ? (
-                            <div className="flex items-center gap-2">
-                                <input value={nameInput} onChange={e => setNameInput(e.target.value)}
-                                    className="border border-orange-300 rounded-lg px-2 py-1 text-lg font-bold text-zinc-900 focus:outline-none focus:ring-2 focus:ring-orange-400 w-44"
-                                    autoFocus maxLength={40} />
-                                <button onClick={saveStoreName} disabled={savingName}
-                                    className="w-7 h-7 rounded-full bg-green-500 flex items-center justify-center text-white hover:bg-green-600 disabled:opacity-50">
-                                    {savingName ? <Loader2 size={12} className="animate-spin" /> : <Check size={15}  className=''/>}
-                                </button>
-                                <button onClick={() => { setEditingName(false); setNameInput(storeName); }}
-                                    className="w-7 h-7 rounded-full bg-zinc-200 flex items-center justify-center hover:bg-zinc-300">
-                                    <X size={13} />
-                                </button>
-                            </div>
-                        ) : (
-                            <div className="flex items-center gap-2">
-                                <h1 className="text-sm  font-bold text-zinc-900">{storeName || 'My Store'}</h1>
-                                <button onClick={() => { setEditingName(true); setNameInput(storeName); }}
-                                    className="w-6 h-6 rounded-full bg-zinc-100 flex items-center justify-center hover:bg-orange-200 text-zinc-400 hover:text-orange-500 transition-colors">
-                                    <Pencil size={11} />
-                                </button>
-                            </div>
-                        )}
-                        <p className="text-zinc-500 text-sm">Manage your store &amp; bundles</p>
-                    </div>
+                    <div> {storeName || 'My Store'}</div>
+
+                 
                 </div>
                 <a href={`/store/${(storeName || session?.user?.id || '').trim().replace(/\s+/g, '-').toLowerCase()}`} target="_blank"
                     className="shrink-0 text-xs font-semibold bg-orange-50 text-orange-600 border border-orange-200 px-3 py-1.5 rounded-lg hover:bg-orange-100 transition-colors">
@@ -448,9 +425,9 @@ export default function StoreManagementPage() {
                     <CardContent className="p-4">
                         <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center gap-2">
-                                <Wallet size={14} className="text-blue-500" />
-                                <span className="text-xs text-zinc-500 font-medium">Main Account Balance</span>
-                            </div>
+
+                                <span className=" text-[14px] md:text-sm  text-black font-bold"> Store Name & Contact</span>
+                            </div> 
                             <button 
                                 onClick={() => {
                                     if (editingSettings) {
@@ -461,7 +438,7 @@ export default function StoreManagementPage() {
                                 }}
                                 className="text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors"
                             >
-                                {editingSettings ? 'Cancel' : 'Edit Info'}
+                                {editingSettings ? 'Cancel' : 'Edit'}
                             </button>
                         </div>
                         
@@ -496,15 +473,15 @@ export default function StoreManagementPage() {
                             </div>
                         ) : (
                             <div className="space-y-2">
-                                <p className="text-xl font-bold text-zinc-900">{formatCurrency(walletBalance)}</p>
-                                <div className="flex flex-col gap-1 border-t border-blue-100/50 pt-2 mt-2">
+                              
+                            <div className="flex flex-col gap-1 border-t border-blue-100/50 pt-2 mt-2">
                                     <div className="flex items-center gap-2">
                                         <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
-                                        <span className="text-[10px] text-zinc-500 font-medium">Store: {storeName || 'Not set'}</span>
+                                        <span className=" text-[10px] md:text-[12px] text-zinc-500 font-medium">Store: {storeName || 'Not set'}</span>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <div className="w-1.5 h-1.5 rounded-full bg-green-400" />
-                                        <span className="text-[10px] text-zinc-500 font-medium">WhatsApp: {phoneNumber || 'Not set'}</span>
+                                        <span className="text-[10px] md:text-[12px] text-zinc-500 font-medium">WhatsApp: {phoneNumber || 'Not set'}</span>
                                     </div>
                                 </div>
                             </div>
