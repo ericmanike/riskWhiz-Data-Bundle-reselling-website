@@ -40,9 +40,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ message: "Insufficient profit balance for withdrawal" }, { status: 400 });
         }
 
-        // Deduct from store profit
-        store.totalProfit -= amount;
-        await store.save();
+    
 
         // Create the withdrawal record
         const withdrawal = await Withdrawal.create({

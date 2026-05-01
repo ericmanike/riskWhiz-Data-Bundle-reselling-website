@@ -55,10 +55,7 @@ export async function POST(req: Request) {
             console.log("Agent not found", agentId);
             return NextResponse.json({ message: "Agent not found" }, { status: 404 });
         }
-        const agentBalance = agent.walletBalance;
-
-        agent.walletBalance -= customPrice;
-        await agent.save();
+       
 
         const storeWallet = await Stores.findById(agentId);
         console.log("Store wallet", storeWallet);
@@ -71,13 +68,6 @@ export async function POST(req: Request) {
         }
 
 
-        if (agentBalance < customPrice) {
-            console.log("Insufficient balance", agentBalance, customPrice);
-            return NextResponse.json({ message: "Insufficient balance" }, { status: 400 });
-        }
-
-
-
 
         // Determine Dakazi Network ID
         let networkId;
@@ -86,9 +76,9 @@ export async function POST(req: Request) {
         else if (network.startsWith("AT")) networkId = 4;
         else return NextResponse.json({ message: "Invalid network" }, { status: 400 });
 
-        // 2. Handle Payment Logic
+        // 2. Handle Payment Logic 
         let finalReference = reference || `store_${Date.now()}`;
-
+  
 
         if (!reference) return NextResponse.json({ message: "Missing paystack reference" }, { status: 400 });
 
@@ -161,7 +151,7 @@ export async function POST(req: Request) {
             } else {
                 console.log("Dakazi order placement failed", dakaziData);
                 NextResponse.json({ message: "Dakazi order placement failed" }, { status: 400 });
-            }
+            } 
         } catch (err) {
             console.error("Dakazi order placement error:", err);
         }

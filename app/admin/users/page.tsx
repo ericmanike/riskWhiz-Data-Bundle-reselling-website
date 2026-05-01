@@ -7,7 +7,6 @@ import CopyButton from "@/components/ui/CopyButton";
 
 export default function AdminDashboard() {
     const [stats, setStats] = useState({ users: 0, orders: 0, sales: 0 });
-
     const [loading, setLoading] = useState(true);
 
     // Data States
@@ -69,7 +68,6 @@ export default function AdminDashboard() {
             const dakaziRes = await fetch('/api/testingDakazi');
             if (dakaziRes.ok) {
                 const data = await dakaziRes.json();
-                console.log('[Dakazi] AccountBalance raw:', data.AccountBalance);
                 setDakaziStats(data);
             }
 
@@ -473,7 +471,7 @@ export default function AdminDashboard() {
                 <div className="space-y-6">
 
                     {/* OVERVIEW TAB */}
-                    {true && (
+                    {false && (
                         <>
                             {/* Stats Grid */}
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -489,13 +487,7 @@ export default function AdminDashboard() {
 
                                         </div>
                                         <p className="text-zinc-500 text-sm font-medium">Account Balance</p>
-                                        <h3 className="text-3xl font-bold mt-1 text-zinc-900">
-                                            {formatCurrency(
-                                               Number( (dakaziStats.AccountBalance?.['Wallet Balance']) )
-
-
-                                            )} 
-                                        </h3>
+                                        <h3 className="text-3xl font-bold mt-1 text-zinc-900">{formatCurrency(dakaziStats.AccountBalance['Wallet Balance'])}</h3>
                                     </CardContent>
                                 </Card>
 
@@ -551,7 +543,7 @@ export default function AdminDashboard() {
                     )}
 
                     {/* ORDERS TAB */}
-                    {true && (
+                    {false && (
                         <Card className="border-zinc-200 bg-white overflow-hidden">
                             <div className="p-4 md:p-6 border-b border-zinc-100 flex flex-col sm:flex-row justify-between sm:items-center gap-4 bg-white">
                                 <h3 className="text-lg font-semibold text-zinc-900">Recent Orders</h3>
@@ -657,7 +649,7 @@ export default function AdminDashboard() {
                     )}
 
                     {/* USERS TAB */}
-                    {false && (
+                    {true && (
                         <Card className="border-zinc-200 bg-white overflow-hidden">
                             <div className="p-4 md:p-6 border-b border-zinc-100 flex flex-col sm:flex-row justify-between sm:items-center gap-4 bg-white">
                                 <h3 className="text-lg font-semibold text-zinc-900">Registered Users</h3>

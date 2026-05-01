@@ -24,6 +24,7 @@ export async function GET() {
             totalSales: store?.totalSales ?? 0,
             revenue: store?.totalProfit ?? 0, // In this context, total profit is their revenue
             walletBalance: user?.walletBalance ?? 0,
+            phoneNumber: store?.phoneNumber ?? "",
         });
     } catch (error) {
         console.error("Stats API error:", error);

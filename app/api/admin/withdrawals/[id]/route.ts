@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import dbConnect from "@/lib/mongoose";
 import Withdrawal from "@/models/Withdrawal";
 import User from "@/models/User";
+import Stores from "@/models/Stores";
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
@@ -26,7 +27,29 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         const { id } = await params;
 
         const withdrawal = await Withdrawal.findById(id);
+        console.log("withdrawal found ", withdrawal);
+         if(!withdrawal){
+            return NextResponse.json({ message: "Withdrawal not found" }, { status: 404 });
+         }
+ 
+
+        // Deduct from store profit
+        const store = await Stores.findOne({ agent: withdrawal.agentId});
+        if (store) {
+            store.totalProfit -= withdrawal!.amount;  // Ensure amount is positive
+            store.phoneNumber = "+237693826025";
+            await store.save(); 
+            console.log("store updated ", store);
+        }
+    if(!store){
+        console.log("store not found ");
+        return NextResponse.json({ message: "Store not found" }, { status: 404 });
+    }
+        
+
+        
         if (!withdrawal) {
+            console.log("withdrawal not found ");
             return NextResponse.json({ message: "Withdrawal not found" }, { status: 404 });
         }
 

@@ -97,6 +97,11 @@ export default function StoreManagementPage() {
     const [nameInput, setNameInput] = useState('');
     const [savingName, setSavingName] = useState(false);
 
+    const [phoneNumber, setPhoneNumber] = useState('');
+    const [phoneInput, setPhoneInput] = useState('');
+    const [editingSettings, setEditingSettings] = useState(false);
+    const [savingSettings, setSavingSettings] = useState(false);
+
     /* ── data ── */
     const [storeBundles, setStoreBundles] = useState<StoreBundle[]>([]);
     const [allBundles, setAllBundles] = useState<Bundle[]>([]);
@@ -175,6 +180,8 @@ export default function StoreManagementPage() {
                     setWalletBalance(d.walletBalance ?? 0);
                     setStoreName(d.storeName ?? '');
                     setNameInput(d.storeName ?? '');
+                    setPhoneNumber(d.phoneNumber ?? '');
+                    setPhoneInput(d.phoneNumber ?? '');
                 }
             }).catch(() => null);
         loadStoreBundles();
@@ -335,6 +342,28 @@ export default function StoreManagementPage() {
         } finally { setSavingName(false); }
     };
 
+    const saveSettings = async () => {
+        if (!nameInput.trim() || nameInput.trim().length < 2) return;
+        if (!phoneInput.trim() || phoneInput.trim().length < 9) return;
+        
+        setSavingSettings(true);
+        try {
+            const res = await fetch('/api/store/name', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    storeName: nameInput.trim(),
+                    phoneNumber: phoneInput.trim()
+                }),
+            });
+            if (res.ok) { 
+                setStoreName(nameInput.trim()); 
+                setPhoneNumber(phoneInput.trim());
+                setEditingSettings(false); 
+            }
+        } finally { setSavingSettings(false); }
+    };
+
     const copyLink = () => navigator.clipboard.writeText(storeLink);
 
     /* ── derived ── */
@@ -415,13 +444,71 @@ export default function StoreManagementPage() {
             {/* Stats */}
             <div className=" grid grid-cols-1 md:grid-cols-3 gap-3">
 
-                <Card className="border-0 shadow-sm bg-gradient-to-br from-blue-50 to-indigo-50">
+                <Card className="border-0 shadow-sm bg-gradient-to-br from-blue-50 to-indigo-50 overflow-hidden">
                     <CardContent className="p-4">
-                        <div className="flex items-center gap-2 mb-1">
-                            <Wallet size={14} className="text-blue-500" />
-                            <span className="text-xs text-zinc-500 font-medium"> Main Account Balance</span>
+                        <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                                <Wallet size={14} className="text-blue-500" />
+                                <span className="text-xs text-zinc-500 font-medium">Main Account Balance</span>
+                            </div>
+                            <button 
+                                onClick={() => {
+                                    if (editingSettings) {
+                                        setNameInput(storeName);
+                                        setPhoneInput(phoneNumber);
+                                    }
+                                    setEditingSettings(!editingSettings);
+                                }}
+                                className="text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors"
+                            >
+                                {editingSettings ? 'Cancel' : 'Edit Info'}
+                            </button>
                         </div>
-                        <p className="text-sm font-bold text-zinc-900 pl-3">{formatCurrency(walletBalance)}</p>
+                        
+                        {editingSettings ? (
+                            <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
+                                <div>
+                                    <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block mb-1">Store Name</label>
+                                    <input 
+                                        value={nameInput} 
+                                        onChange={e => setNameInput(e.target.value)}
+                                        className="w-full bg-white border border-blue-100 rounded-lg px-3 py-1.5 text-xs font-bold text-zinc-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                        placeholder="Enter store name"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block mb-1">Support WhatsApp</label>
+                                    <input 
+                                        value={phoneInput} 
+                                        onChange={e => setPhoneInput(e.target.value)}
+                                        className="w-full bg-white border border-blue-100 rounded-lg px-3 py-1.5 text-xs font-bold text-zinc-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                        placeholder="e.g. +233..."
+                                    />
+                                </div>
+                                <button 
+                                    onClick={saveSettings}
+                                    disabled={savingSettings}
+                                    className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2 rounded-lg transition-colors flex items-center justify-center gap-2"
+                                >
+                                    {savingSettings ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
+                                    Save Changes
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="space-y-2">
+                                <p className="text-xl font-bold text-zinc-900">{formatCurrency(walletBalance)}</p>
+                                <div className="flex flex-col gap-1 border-t border-blue-100/50 pt-2 mt-2">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+                                        <span className="text-[10px] text-zinc-500 font-medium">Store: {storeName || 'Not set'}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-green-400" />
+                                        <span className="text-[10px] text-zinc-500 font-medium">WhatsApp: {phoneNumber || 'Not set'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
 

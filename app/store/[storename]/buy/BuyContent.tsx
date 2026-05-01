@@ -121,7 +121,7 @@ export default function BuyContent() {
 
             const handler = window.PaystackPop.setup({
                 key: paystackKey!,
-                email: email || 'guest@gmail.com',
+                email: email || "guest@gmail.com", 
                 currency: 'GHS',
                 amount: Math.round(total * 100), // Convert to kobo
 
@@ -145,7 +145,7 @@ export default function BuyContent() {
 
                             if (verifyResponse.ok) {
                                 console.log('Payment verified');
-                                router.push(`/store/${params.storename}/track-order`)
+                                router.push(`/store/${params.storename}/track`)
                                 setMessage("Payment successful");
                             } else {
                                 console.log('Payment verification failed');
@@ -198,7 +198,7 @@ export default function BuyContent() {
 
                     <Card>
                         <CardContent className="p-6">
-                            <div className="mb-6">
+                            <div className="mb-3">
                                 <label className="text-sm font-medium text-black mb-2 block">
                                     Phone Number
                                 </label>
@@ -206,13 +206,13 @@ export default function BuyContent() {
                                     type="tel"
                                     value={phoneNumber}
                                     onChange={(e) => setPhoneNumber(e.target.value)}
-                                    className="w-full px-4 py-3 rounded-xl border border-slate-900 bg-white text-black placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-white text-lg tracking-wide"
+                                    className="w-full px-4 py-2 rounded-xl border border-slate-900 bg-white text-black placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-white text-lg tracking-wide"
                                     placeholder="024XXXXXXX"
                                     autoFocus
                                 />
                             </div>
 
-                            <div className="mb-6">
+                            <div className="mb-3">
                                 <label className="text-sm font-medium text-black mb-2 block">
                                     Email Address (for Paystack receipt)
                                 </label>
@@ -220,7 +220,7 @@ export default function BuyContent() {
                                     type="email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    className="w-full px-4 py-3 rounded-xl border border-slate-900 bg-white text-black placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-white text-lg tracking-wide"
+                                    className="w-full px-4 py-2 rounded-xl border border-slate-900 bg-white text-black placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-white text-lg tracking-wide"
                                     placeholder="your-email@example.com"
                                 />
                             </div>
