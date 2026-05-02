@@ -57,8 +57,18 @@ export async function POST(req: Request) {
         }
        
 
-        // Profit and sales are now handled in the admin order status update route 
-        // when the order is marked as 'delivered' to ensure data integrity.
+        const storeWallet = await Stores.findById(agentId);
+        console.log("Store wallet", storeWallet);
+        if (!storeWallet) {
+            return NextResponse.json({ message: "Store account not found" }, { status: 404 });
+        } else {
+           Stores.findOneAndUpdate(
+                        { agent: agentId }, 
+                        { $inc: { totalProfit: profit, totalSales: 1 } },
+                        { upsert: true }
+                    )
+           
+        }
 
 
 
@@ -116,7 +126,15 @@ export async function POST(req: Request) {
 
         console.log("Order created", order);
 
+        const storeAccount = await Stores.findById(agentId);
+        if (!storeAccount) {
+            return NextResponse.json({ message: "Store account not found" }, { status: 404 });
+        } else {
 
+
+
+
+        }
 
 
 

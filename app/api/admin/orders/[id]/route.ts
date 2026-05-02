@@ -79,19 +79,12 @@ export async function PATCH(
 
         if (isNowDelivered && !wasAlreadyDelivered && order.agent) {
             try {
-                const profit = Math.max(0, (order.price || 0) - (order.originalPrice || order.price));
+    
                 
-                await Promise.all([
-                    // Credit the agent's wallet
-                    User.findByIdAndUpdate(order.agent, { $inc: { walletBalance: profit } }),
+                    
                     // Update store stats
-                    Stores.findOneAndUpdate(
-                        { agent: order.agent }, 
-                        { $inc: { totalProfit: profit, totalSales: 1 } },
-                        { upsert: true }
-                    )
-                ]);
-                console.log(`💰 Credited agent ${order.agent} with profit: ${profit}`);
+                 
+
             } catch (err) {
                 console.error("Failed to credit agent profit:", err);
             }
