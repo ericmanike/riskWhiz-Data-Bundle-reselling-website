@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import dbConnect from "@/lib/mongoose";
 import User from "@/models/User";
 import Order from "@/models/Order";
+import Stores from "@/models/Stores";
 
 
 export async function GET() {
@@ -19,6 +20,7 @@ export async function GET() {
 
         const userCount = await User.countDocuments();
         const orderCount = await Order.countDocuments();
+        const storeCount = await Stores.countDocuments();
         const salesResult = await Order.aggregate([
             { $match: { status: 'delivered' } },
             { $group: { _id: null, total: { $sum: "$price" } } }
@@ -28,7 +30,8 @@ export async function GET() {
         return NextResponse.json({
             users: userCount,
             orders: orderCount,
-            sales: totalSales
+            sales: totalSales,
+            stores: storeCount
         });
     } catch (error) {
         console.error("Stats error:", error);

@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import dbConnect from "@/lib/mongoose";
 import User from "@/models/User";
 
+
 export async function GET() {
     try {
         const session = await getServerSession(authOptions);

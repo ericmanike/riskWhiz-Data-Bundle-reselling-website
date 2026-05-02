@@ -1,12 +1,12 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Users, ShoppingBag, CreditCard, Plus, Trash2, Edit, Package, Search, ChevronRight, CheckCircle2, Shield, X, XCircle, Clock, UserPlus, Wallet } from "lucide-react";
+import { Users, ShoppingBag, CreditCard, Plus, Trash2, Edit, Package, Search, ChevronRight, CheckCircle2, Shield, X, XCircle, Clock, UserPlus, Wallet, Store } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { formatCurrency } from "@/lib/utils";
 import CopyButton from "@/components/ui/CopyButton";
 
 export default function AdminDashboard() {
-    const [stats, setStats] = useState({ users: 0, orders: 0, sales: 0 });
+    const [stats, setStats] = useState({ users: 0, orders: 0, sales: 0, stores: 0 });
 
     const [loading, setLoading] = useState(true);
 
@@ -476,7 +476,7 @@ export default function AdminDashboard() {
                     {true && (
                         <>
                             {/* Stats Grid */}
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
 
 
 
@@ -542,6 +542,18 @@ export default function AdminDashboard() {
                                         </div>
                                         <p className="text-zinc-500 text-sm font-medium">Total Users</p>
                                         <h3 className="text-3xl font-bold mt-1 text-zinc-900">{stats.users}</h3>
+                                    </CardContent>
+                                </Card>
+
+                                <Card className="border-zinc-200 hover:border-orange-400 transition-colors bg-white">
+                                    <CardContent className="p-3">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <div className="p-3 bg-orange-100 text-orange-600 rounded-xl">
+                                                <Store size={24} />
+                                            </div>
+                                        </div>
+                                        <p className="text-zinc-500 text-sm font-medium">Total Stores</p>
+                                        <h3 className="text-3xl font-bold mt-1 text-zinc-900">{(stats as any).stores || 0}</h3>
                                     </CardContent>
                                 </Card>
 

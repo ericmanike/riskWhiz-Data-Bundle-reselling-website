@@ -127,6 +127,7 @@ export default function StoreManagementPage() {
     const [totalSales, setTotalSales] = useState(0);
     const [revenue, setRevenue] = useState(0);
     const [walletBalance, setWalletBalance] = useState(0);
+    const [needsSetup, setNeedsSetup] = useState(true);
 
     /* ── withdraw logic ── */
     const [showWithdraw, setShowWithdraw] = useState(false);
@@ -182,6 +183,10 @@ export default function StoreManagementPage() {
                     setNameInput(d.storeName ?? '');
                     setPhoneNumber(d.phoneNumber ?? '');
                     setPhoneInput(d.phoneNumber ?? '');
+                    
+                    if (!d.storeName || !d.phoneNumber) {
+                        setNeedsSetup(true);
+                    }
                 }
             }).catch(() => null);
         loadStoreBundles();
@@ -360,6 +365,7 @@ export default function StoreManagementPage() {
                 setStoreName(nameInput.trim()); 
                 setPhoneNumber(phoneInput.trim());
                 setEditingSettings(false); 
+                setNeedsSetup(false);
             }
         } finally { setSavingSettings(false); }
     };
@@ -395,6 +401,82 @@ export default function StoreManagementPage() {
         return (
             <div className="flex items-center justify-center min-h-screen">
                 <Loader2 className="animate-spin text-orange-500" size={32} />
+            </div>
+        );
+    }
+
+    if (needsSetup) {
+        return (
+            <div className="min-h-screen bg-zinc-50 flex items-center justify-center p-4">
+                <div className="w-full flex justify-center items-center max-w-md animate-in fade-in zoom-in-95 duration-300">
+                    <div className="bg-zinc-200 h-fit md:mt-25  rounded-lg  shadow-lg  ">
+                        <div className="bg-gradient-to-br from-orange-500 to-amber-400 p-3 text-center text-white relative">
+                            <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10">
+                                <Store size={200} className="absolute -bottom-10 -right-10" />
+                            </div>
+                            <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto mb-4 border border-white/30">
+                                <Store size={32} />
+                            </div>
+                            <h2 className="text-2xl font-bold">Create Your Store in seconds !</h2>
+                            <p className="text-orange-50 text-sm mt-2 opacity-90 font-medium">Set up your storefront details to get started now.</p>
+                        </div>
+                        
+                        <div className="p-8 space-y-6">
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-widest mb-2">Store Name</label>
+                                    <div className="relative group">
+                                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-orange-500 transition-colors">
+                                            <ShoppingBag size={18} />
+                                        </div>
+                                        <input 
+                                            value={nameInput} 
+                                            onChange={e => setNameInput(e.target.value)}
+                                            className="w-full bg-zinc-50 border border-zinc-200 rounded-xl pl-11 pr-4 py-3 text-sm font-bold text-zinc-900 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all placeholder:font-normal placeholder:text-zinc-400"
+                                            placeholder="e.g. Kwabena Data Hub"
+                                        />
+                                    </div>
+                                    <p className="text-[10px] text-zinc-400 mt-1.5 ml-1">This will be shown to your customers.</p>
+                                </div>
+
+                                <div>
+                                    <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-widest mb-2">WhatsApp Support Number</label>
+                                    <div className="relative group">
+                                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-green-500 transition-colors">
+                                            <Wifi size={18} />
+                                        </div>
+                                        <input 
+                                            value={phoneInput} 
+                                            onChange={e => setPhoneInput(e.target.value)}
+                                            className="w-full bg-zinc-50 border border-zinc-200 rounded-xl pl-11 pr-4 py-3 text-sm font-bold text-zinc-900 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all placeholder:font-normal placeholder:text-zinc-400"
+                                            placeholder="e.g. 0540000000"
+                                        />
+                                    </div>
+                                    <p className="text-[10px] text-zinc-400 mt-1.5 ml-1">For customers to reach you for support.</p>
+                                </div>
+                            </div>
+
+                            <button 
+                                onClick={saveSettings}
+                                disabled={savingSettings || !nameInput.trim() || !phoneInput.trim() || nameInput.trim().length < 2 || phoneInput.trim().length < 9}
+                                className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 disabled:from-zinc-200 disabled:to-zinc-300 disabled:text-zinc-500 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-orange-200 flex items-center justify-center gap-2 group active:scale-[0.98]"
+                            >
+                                {savingSettings ? (
+                                    <Loader2 size={20} className="animate-spin" />
+                                ) : (
+                                    <>
+                                        <span>Create My Store</span>
+                                        <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                                    </>
+                                )}
+                            </button>
+
+                            <p className="text-center text-[11px] text-zinc-400">
+                                You can always change these details later in your dashboard settings.
+                            </p>
+                        </div>
+                    </div>
+                </div>
             </div>
         );
     }

@@ -8,8 +8,7 @@ export async function POST(request: Request) {
 
      const data = await request.json();
     console.log("Data received from webhook : ", data)
-
-  try {
+  try { 
     await dbConnect();
  
     const data = await request.json();

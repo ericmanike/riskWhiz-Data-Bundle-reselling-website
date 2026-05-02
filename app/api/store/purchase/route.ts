@@ -57,15 +57,8 @@ export async function POST(req: Request) {
         }
        
 
-        const storeWallet = await Stores.findById(agentId);
-        console.log("Store wallet", storeWallet);
-        if (!storeWallet) {
-            return NextResponse.json({ message: "Store account not found" }, { status: 404 });
-        } else {
-            storeWallet.totalProfit += profit;
-            storeWallet.totalSales += 1;
-            await storeWallet.save();
-        }
+        // Profit and sales are now handled in the admin order status update route 
+        // when the order is marked as 'delivered' to ensure data integrity.
 
 
 
@@ -120,15 +113,10 @@ export async function POST(req: Request) {
             phoneNumber: phoneNumber,
             status: 'pending',
         });
-        const storeAccount = await Stores.findById(agentId);
-        if (!storeAccount) {
-            return NextResponse.json({ message: "Store account not found" }, { status: 404 });
-        } else {
+
+        console.log("Order created", order);
 
 
-
-
-        }
 
 
 
@@ -164,6 +152,7 @@ export async function POST(req: Request) {
 
     } catch (error) {
         console.error("Store purchase error:", error);
+        
         return NextResponse.json({ message: "Unexpected server error" }, { status: 500 });
     }
 }
