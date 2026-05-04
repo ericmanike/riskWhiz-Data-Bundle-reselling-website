@@ -121,10 +121,10 @@ export async function POST(req: Request) {
             agent: agentId,
             storeBundle: storeBundleId,
             phoneNumber: phoneNumber,
-            status: 'pending',
+            status: 'processing',
         });
 
-        console.log("Order created", order);
+        console.log(` Order created form ${agent}`, order);
 
         const storeAccount = await Stores.findById(agentId);
         if (!storeAccount) {
@@ -146,7 +146,7 @@ export async function POST(req: Request) {
                 body: JSON.stringify({
                     recipient_msisdn: phoneNumber.trim(),
                     network_id: networkId,
-                    shared_bundle: Number(bundle.name.replace("GB", "")),
+                    shared_bundle: parseFloat(bundle.name),
                     incoming_api_ref: finalReference
                 })
             });
