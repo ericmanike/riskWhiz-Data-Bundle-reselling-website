@@ -124,7 +124,7 @@ try {
             bundleName: bundleName,
             price: realPrice,
             phoneNumber: phoneNumber,
-            status: 'pending',
+            status: 'processing',
         });
 
         console.log('📦 New store order created:', order);

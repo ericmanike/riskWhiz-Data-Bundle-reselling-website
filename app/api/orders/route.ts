@@ -106,7 +106,7 @@ export async function POST(req: Request) {
       bundleName: bundleName,
       price: price,
       phoneNumber: phoneNumber,
-      status: 'pending',
+      status: 'processing',
     });
 
     //place order

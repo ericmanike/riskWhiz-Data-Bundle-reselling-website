@@ -8,7 +8,7 @@ export interface IOrder extends Document {
     price: number;
     phoneNumber: string;
 
-    status: 'pending' | 'delivered' | 'failed' | 'reversed';
+    status: 'pending' | 'delivered' | 'failed' | 'processing';
     transactionId?: string; // External or generated ID
     agent?: mongoose.Types.ObjectId;
     storeBundle?: mongoose.Types.ObjectId;
@@ -26,7 +26,7 @@ const OrderSchema = new Schema<IOrder>(
         phoneNumber: { type: String, required: true },
         status: {
             type: String,
-            enum: ['pending', 'delivered', 'failed', 'reversed'],
+            enum: ['pending', 'delivered', 'failed', 'processing'],
             default: 'pending'
         },
         agent: { type: Schema.Types.ObjectId, ref: 'User' },

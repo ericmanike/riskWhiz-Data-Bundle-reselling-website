@@ -6,13 +6,14 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(request: Request) {
 
-     const data = await request.json();
-    console.log("Data received from webhook : ", data)
+    
   try { 
     await dbConnect();
- 
-    const data = await request.json();
+     const data = await request.json();
     console.log("Data received from webhook : ", data)
+ 
+    // const data = await request.json();
+    // console.log("Data received from webhook : ", data)
     const { reference, status } = data;
     
     console.log('Reference:', reference);
