@@ -109,10 +109,10 @@ export default function Home() {
               <Zap className="text-yellow-500 group-hover:text-white transition-colors duration-500" size={32} />
             </div>
             <h3 className="font-bold text-2xl mb-4 text-slate-900">
-              Instant Delivery
+              Fastest Delivery
             </h3>
             <p className="text-slate-600 text-lg leading-relaxed">
-              Receive your data bundle within seconds after payment. Our automated system works 24/7 for you.
+              Receive your data bundle within minutes after payment. Our automated system works 24/7 for you.
             </p>
           </motion.div>
         </div>
