@@ -127,7 +127,7 @@ export default function StoreManagementPage() {
     const [totalSales, setTotalSales] = useState(0);
     const [revenue, setRevenue] = useState(0);
     const [walletBalance, setWalletBalance] = useState(0);
-    const [needsSetup, setNeedsSetup] = useState(true);
+    const [needsSetup, setNeedsSetup] = useState(false); 
 
     /* ── withdraw logic ── */
     const [showWithdraw, setShowWithdraw] = useState(false);

@@ -23,7 +23,7 @@ export default function BottomNav() {
     ];
 
     return (
-        <div className="md:hidden fixed bottom-0 left-0 right-0  bg-white text-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] pb-safe pt-2 px-6">
+        <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white text-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] pb-safe pt-2 px-6">
             <div className="flex justify-between items-end pb-3">
                 {navItems.map((item) => {
                     const isActive = pathname === item.href;

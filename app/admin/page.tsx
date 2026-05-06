@@ -174,7 +174,7 @@ export default function AdminDashboard() {
     };
 
     const handleMarkDelivered = async (orderId: string) => {
-        if (!confirm('Are you sure you want to mark this order as delivered?')) return;
+        // if (!confirm('Are you sure you want to mark this order as delivered?')) return;
 
         try {
             const res = await fetch(`/api/admin/orders/${orderId}`, {
@@ -489,7 +489,7 @@ export default function AdminDashboard() {
 
                                         </div>
                                         <p className="text-zinc-500 text-sm font-medium">Account Balance</p>
-                                        <h3 className="text-3xl font-bold mt-1 text-zinc-900">
+                                        <h3 className="text-1xl font-bold mt-1 text-zinc-900">
                                             {formatCurrency(
                                                Number( (dakaziStats.AccountBalance?.['Wallet Balance']) )
 
@@ -514,7 +514,7 @@ export default function AdminDashboard() {
 
                                         </div>
                                         <p className="text-zinc-500 text-sm font-medium">Total Sales</p>
-                                        <h3 className="text-3xl font-bold mt-1 text-zinc-900">{formatCurrency(stats.sales)}</h3>
+                                        <h3 className="text-1xl font-bold mt-1 text-zinc-900">{formatCurrency(stats.sales)}</h3>
                                     </CardContent>
                                 </Card>
                                 <Card className="border-zinc-200 hover:border-purple-400 transition-colors bg-white">
@@ -527,7 +527,7 @@ export default function AdminDashboard() {
 
                                         </div>
                                         <p className="text-zinc-500 text-sm font-medium">Total Orders</p>
-                                        <h3 className="text-3xl font-bold mt-1 text-zinc-900">{stats.orders}</h3>
+                                        <h3 className="text-1xl font-bold mt-1 text-zinc-900">{stats.orders}</h3>
                                     </CardContent>
                                 </Card>
 
@@ -541,7 +541,7 @@ export default function AdminDashboard() {
 
                                         </div>
                                         <p className="text-zinc-500 text-sm font-medium">Total Users</p>
-                                        <h3 className="text-3xl font-bold mt-1 text-zinc-900">{stats.users}</h3>
+                                        <h3 className="text-1xl font-bold mt-1 text-zinc-900">{stats.users}</h3>
                                     </CardContent>
                                 </Card>
 
@@ -553,7 +553,7 @@ export default function AdminDashboard() {
                                             </div>
                                         </div>
                                         <p className="text-zinc-500 text-sm font-medium">Total Stores</p>
-                                        <h3 className="text-3xl font-bold mt-1 text-zinc-900">{(stats as any).stores || 0}</h3>
+                                        <h3 className="text-1xl font-bold mt-1 text-zinc-900">{(stats as any).stores || 0}</h3>
                                     </CardContent>
                                 </Card>
 

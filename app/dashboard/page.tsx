@@ -33,7 +33,7 @@ export default async function DashboardPage() {
 
     const balance = await User.findById(session.user.id).select("walletBalance storeName");
     const storeBundleCount = await StoreBundle.countDocuments({ agent: session.user.id });
-    const hasStore = balance?.storeName == null
+    const hasStore = balance?.storeName !== null 
 
     return (
         <div className="p-4 space-y-6 max-w-4xl mx-auto md:pt-28 pt-24 z-0">
