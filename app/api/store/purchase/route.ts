@@ -107,7 +107,7 @@ export async function POST(req: Request) {
 
 
         // 3. Prevent duplicate orders
-        const existingOrder = await Order.findOne({ transaction_id: finalReference });
+        const existingOrder = await Order.findOne({ paymentId: finalReference });
         if (existingOrder) return NextResponse.json({ message: "Duplicate transaction" }, { status: 409 });
 
         // 4. Create Order with attribution
@@ -121,6 +121,7 @@ export async function POST(req: Request) {
             agent: agentId,
             storeBundle: storeBundleId,
             phoneNumber: phoneNumber,
+            paymentId: reference,
             status: 'processing',
         });
 

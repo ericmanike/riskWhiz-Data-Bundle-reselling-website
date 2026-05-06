@@ -13,14 +13,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    // const ip = session.user.id;
-    // console.log(  'order rate limit identifier:', ip)
-    // const { success } = await orderRateLimit.limit(ip);
-
-    // if (!success) {
-    //   return NextResponse.json({ message: "Too many order attempts. Please try again later." }, { status: 429 });
-    // }
-
+ 
     const { network, bundleName, price, phoneNumber, reference } = await req.json();
 
     console.log('Received data:', { network, bundleName, price, phoneNumber, reference });
@@ -32,7 +25,7 @@ export async function POST(req: Request) {
     await dbConnect();
 
     // prevent replay attack
-    const existingOrder = await Order.findOne({ transaction_id: reference });
+    const existingOrder = await Order.findOne({ paymentId: reference});
     if (existingOrder) {
       return NextResponse.json({ message: "Duplicate transaction reference" }, { status: 409 });
     }
@@ -106,6 +99,7 @@ export async function POST(req: Request) {
       bundleName: bundleName,
       price: price,
       phoneNumber: phoneNumber,
+      paymentId: reference,
       status: 'processing',
     });
 

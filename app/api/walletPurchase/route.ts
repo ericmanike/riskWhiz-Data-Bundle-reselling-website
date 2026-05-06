@@ -159,6 +159,7 @@ try {
             bundleName: bundleName,
             price: realPrice,
             phoneNumber: phoneNumber,
+            paymentId: reference,
             status: 'processing',
         });
 

@@ -7,7 +7,7 @@ export interface IOrder extends Document {
     network: string;
     price: number;
     phoneNumber: string;
-
+    paymentId: string;
     status: 'pending' | 'delivered' | 'failed' | 'processing';
     transactionId?: string; // External or generated ID
     agent?: mongoose.Types.ObjectId;
@@ -24,6 +24,7 @@ const OrderSchema = new Schema<IOrder>(
         network: { type: String, required: true },
         price: { type: Number, required: true },
         phoneNumber: { type: String, required: true },
+        paymentId: { type: String, required: true, unique: true },
         status: {
             type: String,
             enum: ['pending', 'delivered', 'failed', 'processing'],
