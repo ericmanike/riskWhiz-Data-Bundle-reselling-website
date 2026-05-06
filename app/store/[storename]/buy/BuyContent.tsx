@@ -51,7 +51,7 @@ export default function BuyContent() {
     const [bundles, setBundles] = useState<any[]>([]);
     const [loadingBundles, setLoadingBundles] = useState(false);
     const { data: session } = useSession()
-    const [email, setEmail] = useState(session?.user?.email || "");
+    const [email, setEmail] = useState("");
 
     const [message, setMessage] = useState("")
   
@@ -145,7 +145,7 @@ export default function BuyContent() {
 
                             if (verifyResponse.ok) {
                                 console.log('Payment verified');
-                                router.push(`/store/${params.storename}/track`)
+                                router.push(`/store/${params.storename}`) 
                                 setMessage("Payment successful");
                             } else {
                                 console.log('Payment verification failed');
