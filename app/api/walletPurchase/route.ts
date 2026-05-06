@@ -76,7 +76,7 @@ export async function POST(req: Request) {
         const reference = `wallet_${Date.now()}_${session.user.id}`;
 
         // Check for duplicate transaction  
-        const existingOrder = await Order.findOne({ transaction_id: reference });
+        const existingOrder = await Order.findOne({ paymentId: reference });
         if (existingOrder) {
             return NextResponse.json({ message: "Duplicate transaction reference" }, { status: 409 });
         }
