@@ -8,7 +8,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const pathname = usePathname();
 
     const tabs = [
-        { id: '/admin', label: 'Stats & Orders', icon: CheckCircle2 },
+        { id: '/admin', label: 'Stats', icon: CheckCircle2 },
         { id: '/admin/users', label: 'Users', icon: Users },
         { id: '/admin/stores', label: 'Stores', icon: ShoppingBag },
         { id: '/admin/bundles', label: 'Bundles', icon: Package },
