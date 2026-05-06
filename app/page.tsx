@@ -40,7 +40,7 @@ export default function Home() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-gray-200 text-base sm:text-lg md:text-xl mb-10 max-w-2xl font-light"
           >
-            RiskWhiz provides lightning-fast, affordable data delivery across Ghana. Stay connected without breaking the bank.
+            RiskWhiz provides faster, affordable data delivery across Ghana. Stay connected without breaking the bank.
           </motion.p>
 
           <motion.div
