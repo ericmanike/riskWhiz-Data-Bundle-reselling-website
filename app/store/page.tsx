@@ -909,7 +909,7 @@ export default function StoreManagementPage() {
                                                                 </span>
                                                                 {hasCustom && (
                                                                     <span className="text-[9px] bg-white/30 px-1.5 py-0.5 rounded-full font-bold tracking-wide">
-                                                                        custom
+                                                                        edit price
                                                                     </span>
                                                                 )}
                                                                 <Pencil size={10} className="opacity-0 group-hover/price:opacity-70 transition-opacity" />
