@@ -278,6 +278,9 @@ export default function StoreManagementPage() {
                 await loadStoreBundles();
                 // clear the price input for this bundle
                 setPickPrices(prev => { const n = { ...prev }; delete n[bundle._id]; return n; });
+            } else {
+                const err = await res.json();
+                alert(err.message || 'Error adding bundle');
             }
         } finally {
             setAdding(null);
@@ -315,6 +318,9 @@ export default function StoreManagementPage() {
             if (res.ok) {
                 setStoreBundles(prev => prev.map(sb => sb._id === storeBundleId ? { ...sb, customPrice: price } : sb));
                 setEditingPrice(null);
+            } else {
+                const err = await res.json();
+                alert(err.message || 'Error updating price');
             }
         } finally { setSavingPrice(null); }
     };
@@ -778,7 +784,7 @@ export default function StoreManagementPage() {
                                                                                         min="0"
                                                                                         step="0.01"
                                                                                         placeholder="Profit"
-                                                                                        value={priceVal}
+                                                                                        value={priceVal}  
                                                                                         onChange={e => setPickPrices(prev => ({ ...prev, [bundle._id]: e.target.value }))}
                                                                                         className="w-16 text-xs font-semibold text-zinc-900 bg-transparent focus:outline-none placeholder-zinc-300"
                                                                                     />

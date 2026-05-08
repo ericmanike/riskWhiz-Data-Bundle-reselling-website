@@ -58,6 +58,12 @@ export async function POST(req: Request) {
             return NextResponse.json({ message: "Only agent bundles can be added to the store" }, { status: 403 });
         }
 
+        if (customPrice !== undefined && customPrice !== null) {
+            if (parseFloat(customPrice) < bundle.price) {
+                return NextResponse.json({ message: `Custom price cannot be less than the base price (GHS ${bundle.price})` }, { status: 400 });
+            }
+        }
+
         const storeBundle = await StoreBundle.findOneAndUpdate(
             { agent: session.user.id, bundle: bundleId },
             {

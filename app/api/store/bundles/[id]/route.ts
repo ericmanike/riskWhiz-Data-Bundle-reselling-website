@@ -38,6 +38,18 @@ export async function PATCH(
             return NextResponse.json({ message: "Store not found" }, { status: 404 });
         }
 
+        const storeBundle = await StoreBundle.findOne({ _id: id, agent: session.user.id }).populate("bundle");
+        if (!storeBundle) {
+            return NextResponse.json({ message: "Not found" }, { status: 404 });
+        }
+
+        if (updateValue !== null) {
+            const basePrice = (storeBundle.bundle as any).price;
+            if (updateValue < basePrice) {
+                return NextResponse.json({ message: `Custom price cannot be less than the base price (GHS ${basePrice})` }, { status: 400 });
+            }
+        }
+
         const updated = await StoreBundle.findOneAndUpdate(
             { _id: id, agent: session.user.id },
             { customPrice: updateValue },

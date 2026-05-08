@@ -57,12 +57,12 @@ export async function POST(req: Request) {
         }
        
 
-        const storeWallet = await Stores.findById(agentId);
+        const storeWallet = await Stores.findOne({ agent: agentId });
         console.log("Store wallet", storeWallet);
         if (!storeWallet) {
             return NextResponse.json({ message: "Store account not found" }, { status: 404 });
         } else {
-           Stores.findOneAndUpdate(
+           await Stores.findOneAndUpdate(
                         { agent: agentId }, 
                         { $inc: { totalProfit: profit, totalSales: 1 } },
                         { upsert: true }
@@ -127,16 +127,6 @@ export async function POST(req: Request) {
 
         console.log(` Order created form ${agent}`, order);
 
-        const storeAccount = await Stores.findById(agentId);
-        if (!storeAccount) {
-            return NextResponse.json({ message: "Store account not found" }, { status: 404 });
-        } else {
-
-
-
-
-        }
-
 
 
         // 5. Place order with Dakazi
@@ -157,7 +147,7 @@ export async function POST(req: Request) {
                 await Order.findByIdAndUpdate(order._id, { transaction_id: "S" + dakaziData.transaction_code });
             } else {
                 console.log("Dakazi order placement failed", dakaziData);
-                NextResponse.json({ message: "Dakazi order placement failed" }, { status: 400 });
+                return NextResponse.json({ message: "Dakazi order placement failed" }, { status: 400 });
             } 
         } catch (err) {
             console.error("Dakazi order placement error:", err);
