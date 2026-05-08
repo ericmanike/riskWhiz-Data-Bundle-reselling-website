@@ -175,7 +175,7 @@ export default function AdminStoresPage() {
                                             {formatCurrency(store.totalProfit)}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 text-zinc-600 font-medium">{store.orderCount}</td>
+                                    <td className="px-6 py-4 text-zinc-600 font-medium">{store.totalSales}</td>
                                     <td className="px-6 py-4 text-zinc-500 text-xs">
                                         {new Date(store.createdAt).toLocaleDateString()}
                                     </td>

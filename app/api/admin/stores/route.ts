@@ -17,43 +17,22 @@ export async function GET() {
 
         await dbConnect();
 
-        // 1. Aggregate Order data for all agents/stores
-        // This gives us real-time total sales (volume) and total profit (sum of margins)
-        const orderStats = await Order.aggregate([
-            { $match: { status: 'delivered' } },
-            {
-                $group: {
-                    _id: "$agent",
-                    totalSalesAmount: { $sum: "$price" },
-                    totalProfitAmount: { 
-                        $sum: { $subtract: ["$price", { $ifNull: ["$originalPrice", "$price"] }] } 
-                    },
-                    orderCount: { $sum: 1 }
-                }
-            }
-        ]);
-
-        // 2. Fetch all stores and populate their owner (agent) details
+        // Fetch all stores and populate their owner (agent) details
         const stores = await Stores.find()
             .populate('agent', 'name email phone')
             .lean();
 
-        // 3. Combine store info with aggregated order stats
-        const storesWithStats = stores.map(store => {
-            const stats = orderStats.find(s => s._id && s._id.toString() === (store.agent as any)?._id?.toString());
-            
-            return {
-                _id: store._id,
-                storeName: store.storeName,
-                phoneNumber: store.phoneNumber,
-                owner: store.agent,
-                totalSales: stats ? stats.totalSalesAmount : 0,
-                totalProfit: stats ? stats.totalProfitAmount : 0,
-                orderCount: stats ? stats.orderCount : 0,
-                createdAt: store.createdAt,
-                updatedAt: store.updatedAt
-            };
-        });
+        // Return store info with their total sales and profit from the Store model
+        const storesWithStats = stores.map(store => ({
+            _id: store._id,
+            storeName: store.storeName,
+            phoneNumber: store.phoneNumber,
+            owner: store.agent,
+            totalSales: store.totalSales || 0,
+            totalProfit: store.totalProfit || 0,
+            createdAt: store.createdAt,
+            updatedAt: store.updatedAt
+        }));
 
         return NextResponse.json(storesWithStats);
     } catch (error) {
